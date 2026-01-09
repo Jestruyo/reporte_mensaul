@@ -21,6 +21,36 @@ let isAuthenticatedFlag = false; // Variable en memoria (se pierde al recargar)
 // ============================================
 // Lista de personas esperadas por grupo
 const GRUPOS_LISTAS = {
+    2: [
+        'Emiro Tapia',
+        'Luis Robles',
+        'Ernesto Echeverry',
+        'José Guzmán',
+        'Yovani Cervantes',
+        'Adriana Valencia',
+        'Evelyn Villar',
+        'Jennys Isaza',
+        'Luz Enith Parodi',
+        'Rosalba Martinez',
+        'Adriana Alfaro',
+        'Deyber Echeverry',
+        'Emelda López',
+        'Enedys Tapia',
+        'Etilbia Theran',
+        'Evelys Tafur',
+        'Genys Pérez',
+        'Isabella Alfaro',
+        'Ivan Alfaro',
+        'Kelly Julio',
+        'Luz Viloria',
+        'Martha Tafur',
+        'Noemi Marino',
+        'Norelia Flórez',
+        'Ramiro Alfaro',
+        'Saray Alfaro',
+        'Sixta Parody',
+        'Yosly Guzman'
+    ],
     3: [
         'Boris Márquez | Junior',
         'Jesús Trujillo',
@@ -53,7 +83,6 @@ const GRUPOS_LISTAS = {
     ]
     // Puedes agregar más grupos aquí:
     // 1: ['Nombre 1', 'Nombre 2', ...],
-    // 2: ['Nombre 1', 'Nombre 2', ...],
 };
 
 // Función para normalizar nombres (quitar acentos, espacios extra, convertir a mayúsculas)
