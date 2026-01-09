@@ -55,14 +55,28 @@
                 <div class="stat-value" id="totalEstudios">-</div>
                 <div class="stat-label">Total Estudios</div>
             </div>
-            <div class="stat-card stat-card-ok">
+            <div class="stat-card stat-card-ok clickable-stat" id="statOk" style="cursor: pointer;">
                 <div class="stat-value" id="totalOk" style="color: #155724;">-</div>
                 <div class="stat-label">Personas OK</div>
             </div>
-            <div class="stat-card stat-card-pending">
+            <div class="stat-card stat-card-pending clickable-stat" id="statPending" style="cursor: pointer;">
                 <div class="stat-value" id="totalPending" style="color: #721c24;">-</div>
                 <div class="stat-label">Pendientes</div>
             </div>
+        </div>
+
+        <!-- Modal para mostrar lista de personas -->
+        <div id="listModal" class="list-modal hidden">
+            <div class="list-modal-content">
+                <div class="list-modal-header">
+                    <h2 id="listModalTitle">Lista de Personas</h2>
+                    <button class="list-modal-close" id="listModalClose">&times;</button>
+                </div>
+                <div class="list-modal-body">
+                    <div id="listModalContent"></div>
+                </div>
+            </div>
+        </div>
         </div>
 
         <div class="filters">

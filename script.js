@@ -215,26 +215,10 @@ function displayData() {
         
         const predicoClass = item.predico === 'Si - Predique' ? 'yes' : 'no';
         
-        // Verificar si la persona está en la lista del grupo
-        const grupoNum = parseInt(item.grupo);
-        const isInList = isPersonInGroupList(item.nombre, grupoNum);
-        let statusBadge = '';
-        
-        if (isInList !== null) {
-            if (isInList) {
-                statusBadge = '<span class="status-badge status-ok">✓ OK</span>';
-            } else {
-                statusBadge = '<span class="status-badge status-pending">⚠ Pendiente</span>';
-            }
-        }
-        
         card.innerHTML = `
             <div class="card-header">
                 <div>
-                    <div class="card-name">
-                        ${item.nombre}
-                        ${statusBadge}
-                    </div>
+                    <div class="card-name">${item.nombre}</div>
                     <div class="card-predico ${predicoClass}">${item.predico || 'No especificado'}</div>
                 </div>
                 <span class="card-grupo">Grupo ${item.grupo || 'N/A'}</span>
@@ -420,10 +404,164 @@ function initAuth() {
 // EVENT LISTENERS PRINCIPALES
 // ============================================
 
-// Event listeners
-document.getElementById('btnRefresh').addEventListener('click', fetchData);
-document.getElementById('filterGrupo').addEventListener('change', applyFilters);
-document.getElementById('filterPredico').addEventListener('change', applyFilters);
+// ============================================
+// MODAL DE LISTA DE PERSONAS
+// ============================================
 
-// Inicializar autenticación al cargar la página
-document.addEventListener('DOMContentLoaded', initAuth);
+// Obtener personas OK o pendientes según el grupo filtrado
+function getPersonasByStatus(status) {
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
+    
+    const personas = [];
+    
+    // Si hay un grupo específico filtrado, usar ese grupo
+    if (grupoNum && GRUPOS_LISTAS[grupoNum]) {
+        const listaGrupo = GRUPOS_LISTAS[grupoNum];
+        const personasReportadas = allData
+            .filter(item => parseInt(item.grupo) === grupoNum)
+            .map(item => normalizeName(item.nombre));
+        
+        listaGrupo.forEach(personaLista => {
+            const personaNormalizada = normalizeName(personaLista);
+            const isReportada = personasReportadas.includes(personaNormalizada);
+            
+            if (status === 'ok' && isReportada) {
+                personas.push({
+                    nombre: personaLista,
+                    grupo: grupoNum,
+                    reportada: true
+                });
+            } else if (status === 'pending' && !isReportada) {
+                personas.push({
+                    nombre: personaLista,
+                    grupo: grupoNum,
+                    reportada: false
+                });
+            }
+        });
+    } else {
+        // Si no hay filtro de grupo, mostrar todos los grupos
+        Object.keys(GRUPOS_LISTAS).forEach(grupoKey => {
+            const grupoNum = parseInt(grupoKey);
+            const listaGrupo = GRUPOS_LISTAS[grupoNum];
+            const personasReportadas = allData
+                .filter(item => parseInt(item.grupo) === grupoNum)
+                .map(item => normalizeName(item.nombre));
+            
+            listaGrupo.forEach(personaLista => {
+                const personaNormalizada = normalizeName(personaLista);
+                const isReportada = personasReportadas.includes(personaNormalizada);
+                
+                if (status === 'ok' && isReportada) {
+                    personas.push({
+                        nombre: personaLista,
+                        grupo: grupoNum,
+                        reportada: true
+                    });
+                } else if (status === 'pending' && !isReportada) {
+                    personas.push({
+                        nombre: personaLista,
+                        grupo: grupoNum,
+                        reportada: false
+                    });
+                }
+            });
+        });
+    }
+    
+    return personas;
+}
+
+// Mostrar modal con lista de personas
+function showListModal(status) {
+    const modal = document.getElementById('listModal');
+    const modalTitle = document.getElementById('listModalTitle');
+    const modalContent = document.getElementById('listModalContent');
+    
+    const personas = getPersonasByStatus(status);
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    
+    // Configurar título
+    if (status === 'ok') {
+        modalTitle.textContent = filterGrupo === 'all' 
+            ? '✓ Personas que han Reportado' 
+            : `✓ Personas del Grupo ${filterGrupo} que han Reportado`;
+    } else {
+        modalTitle.textContent = filterGrupo === 'all' 
+            ? '⚠ Personas Pendientes por Reportar' 
+            : `⚠ Personas del Grupo ${filterGrupo} Pendientes por Reportar`;
+    }
+    
+    // Generar contenido
+    if (personas.length === 0) {
+        modalContent.innerHTML = '<div class="person-list-item empty">No hay personas en esta categoría</div>';
+    } else {
+        // Agrupar por grupo si no hay filtro
+        if (filterGrupo === 'all') {
+            const grouped = {};
+            personas.forEach(persona => {
+                if (!grouped[persona.grupo]) {
+                    grouped[persona.grupo] = [];
+                }
+                grouped[persona.grupo].push(persona);
+            });
+            
+            let html = '';
+            Object.keys(grouped).sort().forEach(grupo => {
+                html += `<div class="person-list-group">
+                    <div class="person-list-group-title">Grupo ${grupo}</div>`;
+                grouped[grupo].forEach(persona => {
+                    html += `<div class="person-list-item">${persona.nombre}</div>`;
+                });
+                html += '</div>';
+            });
+            modalContent.innerHTML = html;
+        } else {
+            // Lista simple si hay filtro de grupo
+            let html = '';
+            personas.forEach(persona => {
+                html += `<div class="person-list-item">${persona.nombre}</div>`;
+            });
+            modalContent.innerHTML = html;
+        }
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+}
+
+// Ocultar modal
+function hideListModal() {
+    const modal = document.getElementById('listModal');
+    modal.classList.add('hidden');
+}
+
+// ============================================
+// EVENT LISTENERS PRINCIPALES
+// ============================================
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar autenticación
+    initAuth();
+    
+    // Event listeners principales
+    document.getElementById('btnRefresh').addEventListener('click', fetchData);
+    document.getElementById('filterGrupo').addEventListener('change', applyFilters);
+    document.getElementById('filterPredico').addEventListener('change', applyFilters);
+    
+    // Event listeners para las tarjetas de estadísticas
+    document.getElementById('statOk').addEventListener('click', () => showListModal('ok'));
+    document.getElementById('statPending').addEventListener('click', () => showListModal('pending'));
+    
+    // Event listener para cerrar el modal
+    document.getElementById('listModalClose').addEventListener('click', hideListModal);
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    document.getElementById('listModal').addEventListener('click', (e) => {
+        if (e.target.id === 'listModal') {
+            hideListModal();
+        }
+    });
+});
