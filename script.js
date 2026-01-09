@@ -59,12 +59,63 @@ const GRUPOS_LISTAS = {
 // Función para normalizar nombres (quitar acentos, espacios extra, convertir a mayúsculas)
 function normalizeName(name) {
     if (!name) return '';
-    return name
+    let normalized = name
         .trim()
         .toUpperCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
-        .replace(/\s+/g, ' '); // Normalizar espacios
+        .replace(/\s*\|\s*/g, '|') // Normalizar espacios alrededor de |
+        .replace(/\s+/g, ' '); // Normalizar espacios múltiples
+    
+    // Normalizaciones específicas de nombres
+    normalized = normalized
+        .replace(/SARAH\b/g, 'SARA') // Sarah -> Sara
+        .replace(/YURLEYDIS/g, 'YURLEIDYS') // Yurleydis -> Yurleidys
+        .replace(/YURLEIDYS/g, 'YURLEIDYS'); // Mantener consistencia
+    
+    return normalized;
+}
+
+// Función para comparar nombres de forma más flexible
+function namesMatch(name1, name2) {
+    const norm1 = normalizeName(name1);
+    const norm2 = normalizeName(name2);
+    
+    // Coincidencia exacta
+    if (norm1 === norm2) return true;
+    
+    // Extraer solo la parte del nombre (antes del |)
+    const getBaseName = (name) => {
+        if (name.includes('|')) {
+            return name.split('|')[0].trim();
+        }
+        return name.trim();
+    };
+    
+    const base1 = getBaseName(norm1);
+    const base2 = getBaseName(norm2);
+    
+    // Comparar los nombres base
+    if (base1 === base2) return true;
+    
+    // Si uno contiene al otro (para casos como "Boris Marquez" y "Boris Márquez | Padre")
+    if (base1.includes(base2) || base2.includes(base1)) {
+        // Asegurar que es una coincidencia real, no solo una palabra
+        const parts1 = base1.split(' ').filter(p => p.length > 1);
+        const parts2 = base2.split(' ').filter(p => p.length > 1);
+        
+        if (parts1.length >= 2 && parts2.length >= 2) {
+            // Si ambos tienen al menos 2 palabras, comparar primeras palabras
+            return parts1[0] === parts2[0] && (parts1[1] === parts2[1] || parts1[1].startsWith(parts2[1]) || parts2[1].startsWith(parts1[1]));
+        }
+        
+        // Si tienen solo una palabra, debe ser exacta
+        if (parts1.length === 1 && parts2.length === 1) {
+            return parts1[0] === parts2[0];
+        }
+    }
+    
+    return false;
 }
 
 // Función para verificar si una persona está en la lista del grupo
@@ -276,14 +327,25 @@ function updateStats() {
     // Si hay un grupo específico filtrado
     if (grupoNum && GRUPOS_LISTAS[grupoNum]) {
         const listaGrupo = GRUPOS_LISTAS[grupoNum];
-        // Eliminar duplicados de la lista normalizando
-        const listaUnica = [...new Set(listaGrupo.map(n => normalizeName(n)))];
-        const personasReportadas = filteredData
-            .filter(item => parseInt(item.grupo) === grupoNum)
-            .map(item => normalizeName(item.nombre));
+        // Crear un mapa para eliminar duplicados y mantener el nombre original
+        const mapaPersonas = new Map();
+        listaGrupo.forEach(personaLista => {
+            const personaNormalizada = normalizeName(personaLista);
+            if (!mapaPersonas.has(personaNormalizada)) {
+                mapaPersonas.set(personaNormalizada, personaLista);
+            }
+        });
         
-        listaUnica.forEach(personaNormalizada => {
-            if (personasReportadas.includes(personaNormalizada)) {
+        // Usar allData para la comparación con nombres originales
+        const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
+        
+        mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
+            // Buscar coincidencia usando la función flexible con los nombres originales
+            const found = personasDelGrupoReportadas.some(item => {
+                return namesMatch(item.nombre, nombreOriginal);
+            });
+            
+            if (found) {
                 okCount++;
             } else {
                 pendingCount++;
@@ -294,14 +356,25 @@ function updateStats() {
         Object.keys(GRUPOS_LISTAS).forEach(grupoKey => {
             const grupoNum = parseInt(grupoKey);
             const listaGrupo = GRUPOS_LISTAS[grupoNum];
-            // Eliminar duplicados de la lista normalizando
-            const listaUnica = [...new Set(listaGrupo.map(n => normalizeName(n)))];
-            const personasReportadas = filteredData
-                .filter(item => parseInt(item.grupo) === grupoNum)
-                .map(item => normalizeName(item.nombre));
+            // Crear un mapa para eliminar duplicados y mantener el nombre original
+            const mapaPersonas = new Map();
+            listaGrupo.forEach(personaLista => {
+                const personaNormalizada = normalizeName(personaLista);
+                if (!mapaPersonas.has(personaNormalizada)) {
+                    mapaPersonas.set(personaNormalizada, personaLista);
+                }
+            });
             
-            listaUnica.forEach(personaNormalizada => {
-                if (personasReportadas.includes(personaNormalizada)) {
+            // Usar allData para la comparación con nombres originales
+            const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
+            
+            mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
+                // Buscar coincidencia usando la función flexible con los nombres originales
+                const found = personasDelGrupoReportadas.some(item => {
+                    return namesMatch(item.nombre, nombreOriginal);
+                });
+                
+                if (found) {
                     okCount++;
                 } else {
                     pendingCount++;
@@ -451,9 +524,7 @@ function getPersonasByStatus(status) {
     // Si hay un grupo específico filtrado, usar ese grupo
     if (grupoNum && GRUPOS_LISTAS[grupoNum]) {
         const listaGrupo = GRUPOS_LISTAS[grupoNum];
-        const personasReportadas = allData
-            .filter(item => parseInt(item.grupo) === grupoNum)
-            .map(item => normalizeName(item.nombre));
+        const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
         
         // Crear un mapa para eliminar duplicados y mantener el nombre original
         const mapaPersonas = new Map();
@@ -465,7 +536,10 @@ function getPersonasByStatus(status) {
         });
         
         mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
-            const isReportada = personasReportadas.includes(personaNormalizada);
+            // Buscar coincidencia usando la función flexible con los nombres originales
+            const isReportada = personasDelGrupoReportadas.some(item => {
+                return namesMatch(item.nombre, nombreOriginal);
+            });
             
             if (status === 'ok' && isReportada) {
                 personas.push({
@@ -486,9 +560,7 @@ function getPersonasByStatus(status) {
         Object.keys(GRUPOS_LISTAS).forEach(grupoKey => {
             const grupoNum = parseInt(grupoKey);
             const listaGrupo = GRUPOS_LISTAS[grupoNum];
-            const personasReportadas = allData
-                .filter(item => parseInt(item.grupo) === grupoNum)
-                .map(item => normalizeName(item.nombre));
+            const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
             
             // Crear un mapa para eliminar duplicados y mantener el nombre original
             const mapaPersonas = new Map();
@@ -500,7 +572,10 @@ function getPersonasByStatus(status) {
             });
             
             mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
-                const isReportada = personasReportadas.includes(personaNormalizada);
+                // Buscar coincidencia usando la función flexible con los nombres originales
+                const isReportada = personasDelGrupoReportadas.some(item => {
+                    return namesMatch(item.nombre, nombreOriginal);
+                });
                 
                 if (status === 'ok' && isReportada) {
                     personas.push({
