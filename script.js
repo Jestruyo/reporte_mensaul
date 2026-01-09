@@ -22,7 +22,7 @@ let isAuthenticatedFlag = false; // Variable en memoria (se pierde al recargar)
 // Lista de personas esperadas por grupo
 const GRUPOS_LISTAS = {
     3: [
-        'Boris Márquez',
+        'Boris Márquez | Junior',
         'Jesús Trujillo',
         'Antonio Medina',
         'Daniel Márquez',
@@ -36,7 +36,7 @@ const GRUPOS_LISTAS = {
         'Yurleidys Navarro',
         'Acela Mercado',
         'Blaider Guerrero',
-        'Boris Márquez',
+        'Boris Márquez | Padre',
         'Carlos Rivera',
         'Cindy García',
         'Dina Rodelo',
@@ -258,31 +258,64 @@ function updateStats() {
     const totalOk = document.getElementById('totalOk');
     const totalPending = document.getElementById('totalPending');
     
+    // Calcular estadísticas básicas
     const stats = filteredData.reduce((acc, item) => {
         acc.horas += item.horas || 0;
         acc.revisitas += item.revisitas || 0;
         acc.estudios += item.estudios || 0;
-        
-        // Verificar estado de comparación
-        const grupoNum = parseInt(item.grupo);
-        const isInList = isPersonInGroupList(item.nombre, grupoNum);
-        if (isInList !== null) {
-            if (isInList) {
-                acc.ok += 1;
-            } else {
-                acc.pending += 1;
-            }
-        }
-        
         return acc;
-    }, { horas: 0, revisitas: 0, estudios: 0, ok: 0, pending: 0 });
+    }, { horas: 0, revisitas: 0, estudios: 0 });
+    
+    // Calcular OK y Pendientes usando la misma lógica que getPersonasByStatus
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
+    
+    let okCount = 0;
+    let pendingCount = 0;
+    
+    // Si hay un grupo específico filtrado
+    if (grupoNum && GRUPOS_LISTAS[grupoNum]) {
+        const listaGrupo = GRUPOS_LISTAS[grupoNum];
+        // Eliminar duplicados de la lista normalizando
+        const listaUnica = [...new Set(listaGrupo.map(n => normalizeName(n)))];
+        const personasReportadas = filteredData
+            .filter(item => parseInt(item.grupo) === grupoNum)
+            .map(item => normalizeName(item.nombre));
+        
+        listaUnica.forEach(personaNormalizada => {
+            if (personasReportadas.includes(personaNormalizada)) {
+                okCount++;
+            } else {
+                pendingCount++;
+            }
+        });
+    } else if (filterGrupo === 'all') {
+        // Si no hay filtro de grupo, contar todos los grupos
+        Object.keys(GRUPOS_LISTAS).forEach(grupoKey => {
+            const grupoNum = parseInt(grupoKey);
+            const listaGrupo = GRUPOS_LISTAS[grupoNum];
+            // Eliminar duplicados de la lista normalizando
+            const listaUnica = [...new Set(listaGrupo.map(n => normalizeName(n)))];
+            const personasReportadas = filteredData
+                .filter(item => parseInt(item.grupo) === grupoNum)
+                .map(item => normalizeName(item.nombre));
+            
+            listaUnica.forEach(personaNormalizada => {
+                if (personasReportadas.includes(personaNormalizada)) {
+                    okCount++;
+                } else {
+                    pendingCount++;
+                }
+            });
+        });
+    }
     
     totalPersonas.textContent = filteredData.length;
     totalHoras.textContent = stats.horas;
     totalRevisitas.textContent = stats.revisitas;
     totalEstudios.textContent = stats.estudios;
-    totalOk.textContent = stats.ok;
-    totalPending.textContent = stats.pending;
+    totalOk.textContent = okCount;
+    totalPending.textContent = pendingCount;
 }
 
 // ============================================
@@ -422,19 +455,27 @@ function getPersonasByStatus(status) {
             .filter(item => parseInt(item.grupo) === grupoNum)
             .map(item => normalizeName(item.nombre));
         
+        // Crear un mapa para eliminar duplicados y mantener el nombre original
+        const mapaPersonas = new Map();
         listaGrupo.forEach(personaLista => {
             const personaNormalizada = normalizeName(personaLista);
+            if (!mapaPersonas.has(personaNormalizada)) {
+                mapaPersonas.set(personaNormalizada, personaLista);
+            }
+        });
+        
+        mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
             const isReportada = personasReportadas.includes(personaNormalizada);
             
             if (status === 'ok' && isReportada) {
                 personas.push({
-                    nombre: personaLista,
+                    nombre: nombreOriginal,
                     grupo: grupoNum,
                     reportada: true
                 });
             } else if (status === 'pending' && !isReportada) {
                 personas.push({
-                    nombre: personaLista,
+                    nombre: nombreOriginal,
                     grupo: grupoNum,
                     reportada: false
                 });
@@ -449,19 +490,27 @@ function getPersonasByStatus(status) {
                 .filter(item => parseInt(item.grupo) === grupoNum)
                 .map(item => normalizeName(item.nombre));
             
+            // Crear un mapa para eliminar duplicados y mantener el nombre original
+            const mapaPersonas = new Map();
             listaGrupo.forEach(personaLista => {
                 const personaNormalizada = normalizeName(personaLista);
+                if (!mapaPersonas.has(personaNormalizada)) {
+                    mapaPersonas.set(personaNormalizada, personaLista);
+                }
+            });
+            
+            mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
                 const isReportada = personasReportadas.includes(personaNormalizada);
                 
                 if (status === 'ok' && isReportada) {
                     personas.push({
-                        nombre: personaLista,
+                        nombre: nombreOriginal,
                         grupo: grupoNum,
                         reportada: true
                     });
                 } else if (status === 'pending' && !isReportada) {
                     personas.push({
-                        nombre: personaLista,
+                        nombre: nombreOriginal,
                         grupo: grupoNum,
                         reportada: false
                     });
