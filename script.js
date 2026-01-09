@@ -14,6 +14,7 @@ const FULL_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid
 // Variables globales
 let allData = [];
 let filteredData = [];
+let isAuthenticatedFlag = false; // Variable en memoria (se pierde al recargar)
 
 // Función para extraer números de texto (ej: "48 h" -> 48)
 function extractNumber(text) {
@@ -208,12 +209,12 @@ function updateStats() {
 
 // Verificar si el usuario está autenticado
 function isAuthenticated() {
-    return sessionStorage.getItem('authenticated') === 'true';
+    return isAuthenticatedFlag;
 }
 
 // Marcar como autenticado
 function setAuthenticated() {
-    sessionStorage.setItem('authenticated', 'true');
+    isAuthenticatedFlag = true;
 }
 
 // Validar código de acceso
@@ -292,16 +293,14 @@ function initAuth() {
         return;
     }
 
-    // Verificar si ya está autenticado
-    if (isAuthenticated()) {
-        hideAuthModal();
-        fetchData();
-    } else {
-        // Asegurar que el modal se muestre correctamente
-        authModal.style.display = 'flex';
-        authModal.classList.remove('hidden');
-        mainContent.style.display = 'none';
-    }
+    // Siempre mostrar el modal al iniciar (la variable se reinicia al recargar)
+    // Asegurar que el modal se muestre correctamente
+    authModal.style.display = 'flex';
+    authModal.classList.remove('hidden');
+    mainContent.style.display = 'none';
+    
+    // Limpiar cualquier código previo en el input
+    authCode.value = '';
 
     // Event listeners para autenticación
     authSubmit.addEventListener('click', handleAuthSubmit);
