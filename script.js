@@ -47,7 +47,7 @@ const GRUPOS_LISTAS = {
         'Linda Márquez',
         'María Herrera',
         'Mariana Saltarín',
-        'Sara Trujillo',
+        'Sarah Trujillo',
         'Vanessa Villa',
         'Yeilis Guerrero'
     ]
