@@ -225,16 +225,26 @@ function validateCode(code) {
 function showAuthModal() {
     const modal = document.getElementById('authModal');
     const mainContent = document.getElementById('mainContent');
-    modal.classList.remove('hidden');
-    mainContent.style.display = 'none';
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+    if (mainContent) {
+        mainContent.style.display = 'none';
+    }
 }
 
 // Ocultar modal y mostrar contenido
 function hideAuthModal() {
     const modal = document.getElementById('authModal');
     const mainContent = document.getElementById('mainContent');
-    modal.classList.add('hidden');
-    mainContent.style.display = 'block';
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+    if (mainContent) {
+        mainContent.style.display = 'block';
+    }
 }
 
 // Manejar el envío del formulario de autenticación
@@ -276,12 +286,21 @@ function initAuth() {
     const authSubmit = document.getElementById('authSubmit');
     const mainContent = document.getElementById('mainContent');
 
+    // Asegurar que el modal esté visible inicialmente si no está autenticado
+    if (!authModal || !authCode || !authSubmit || !mainContent) {
+        console.error('Elementos de autenticación no encontrados');
+        return;
+    }
+
     // Verificar si ya está autenticado
     if (isAuthenticated()) {
         hideAuthModal();
         fetchData();
     } else {
-        showAuthModal();
+        // Asegurar que el modal se muestre correctamente
+        authModal.style.display = 'flex';
+        authModal.classList.remove('hidden');
+        mainContent.style.display = 'none';
     }
 
     // Event listeners para autenticación
@@ -295,7 +314,9 @@ function initAuth() {
     });
 
     // Enfocar el input al cargar
-    authCode.focus();
+    setTimeout(() => {
+        authCode.focus();
+    }, 100);
 }
 
 // ============================================
