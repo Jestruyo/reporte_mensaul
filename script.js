@@ -171,6 +171,7 @@ async function fetchData() {
 function updateGroupFilter() {
     const filterGrupo = document.getElementById('filterGrupo');
     const grupos = [...new Set(allData.map(item => item.grupo).filter(g => g))].sort();
+    console.log(grupos);
     
     // Limpiar opciones existentes (excepto "Todos")
     filterGrupo.innerHTML = '<option value="all">Todos los grupos</option>';
