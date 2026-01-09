@@ -4,6 +4,9 @@ const SHEET_GID = '442652710'; // ID de la pestaña (gid) - más confiable que e
 const SHEET_TITLE = 'Respuestas de formulario 4'; // Nombre de la pestaña (alternativa)
 const SHEET_RANGE = 'A2:I1000'; // Rango de datos (empezamos en A2 para omitir el encabezado)
 
+// CONFIGURACIÓN: Código de validación (cambia este código por el que desees)
+const VALIDATION_CODE = 'CORDIALIDAD2025';
+
 // URL para obtener los datos en formato JSON desde Google Sheets
 // Usamos gid en lugar del nombre de la pestaña para mayor confiabilidad
 const FULL_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}&range=${SHEET_RANGE}&tqx=out:json`;
@@ -199,10 +202,110 @@ function updateStats() {
     totalEstudios.textContent = stats.estudios;
 }
 
+// ============================================
+// SISTEMA DE AUTENTICACIÓN
+// ============================================
+
+// Verificar si el usuario está autenticado
+function isAuthenticated() {
+    return sessionStorage.getItem('authenticated') === 'true';
+}
+
+// Marcar como autenticado
+function setAuthenticated() {
+    sessionStorage.setItem('authenticated', 'true');
+}
+
+// Validar código de acceso
+function validateCode(code) {
+    return code.trim().toUpperCase() === VALIDATION_CODE.toUpperCase();
+}
+
+// Mostrar modal de autenticación
+function showAuthModal() {
+    const modal = document.getElementById('authModal');
+    const mainContent = document.getElementById('mainContent');
+    modal.classList.remove('hidden');
+    mainContent.style.display = 'none';
+}
+
+// Ocultar modal y mostrar contenido
+function hideAuthModal() {
+    const modal = document.getElementById('authModal');
+    const mainContent = document.getElementById('mainContent');
+    modal.classList.add('hidden');
+    mainContent.style.display = 'block';
+}
+
+// Manejar el envío del formulario de autenticación
+function handleAuthSubmit() {
+    const codeInput = document.getElementById('authCode');
+    const errorDiv = document.getElementById('authError');
+    const submitBtn = document.getElementById('authSubmit');
+    const code = codeInput.value;
+
+    // Limpiar error anterior
+    errorDiv.style.display = 'none';
+    submitBtn.disabled = true;
+
+    // Validar código
+    if (validateCode(code)) {
+        setAuthenticated();
+        hideAuthModal();
+        // Cargar datos después de autenticarse
+        fetchData();
+    } else {
+        // Mostrar error
+        errorDiv.style.display = 'block';
+        codeInput.value = '';
+        codeInput.focus();
+        // Agregar animación de error
+        codeInput.style.animation = 'shake 0.5s ease';
+        setTimeout(() => {
+            codeInput.style.animation = '';
+        }, 500);
+    }
+
+    submitBtn.disabled = false;
+}
+
+// Inicializar sistema de autenticación
+function initAuth() {
+    const authModal = document.getElementById('authModal');
+    const authCode = document.getElementById('authCode');
+    const authSubmit = document.getElementById('authSubmit');
+    const mainContent = document.getElementById('mainContent');
+
+    // Verificar si ya está autenticado
+    if (isAuthenticated()) {
+        hideAuthModal();
+        fetchData();
+    } else {
+        showAuthModal();
+    }
+
+    // Event listeners para autenticación
+    authSubmit.addEventListener('click', handleAuthSubmit);
+    
+    // Permitir envío con Enter
+    authCode.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleAuthSubmit();
+        }
+    });
+
+    // Enfocar el input al cargar
+    authCode.focus();
+}
+
+// ============================================
+// EVENT LISTENERS PRINCIPALES
+// ============================================
+
 // Event listeners
 document.getElementById('btnRefresh').addEventListener('click', fetchData);
 document.getElementById('filterGrupo').addEventListener('change', applyFilters);
 document.getElementById('filterPredico').addEventListener('change', applyFilters);
 
-// Cargar datos al iniciar
-fetchData();
+// Inicializar autenticación al cargar la página
+document.addEventListener('DOMContentLoaded', initAuth);

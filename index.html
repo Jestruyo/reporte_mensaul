@@ -7,7 +7,31 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Modal de Autenticación -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <div class="auth-modal-header">
+                <h2>🔒 Acceso Restringido</h2>
+                <p>Ingresa el código de validación para continuar</p>
+            </div>
+            <div class="auth-modal-body">
+                <input 
+                    type="password" 
+                    id="authCode" 
+                    class="auth-input" 
+                    placeholder="Código de acceso"
+                    autocomplete="off"
+                    autofocus
+                >
+                <div id="authError" class="auth-error" style="display: none;">
+                    ❌ Código incorrecto. Intenta de nuevo.
+                </div>
+                <button id="authSubmit" class="auth-submit">Ingresar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
         <header>
             <h1>📊 Reporte Mensual de Servicio</h1>
             <p class="subtitle">Congregación Cordialidad</p>
