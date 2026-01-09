@@ -258,9 +258,16 @@ function displayData() {
         return;
     }
     
+    // Ordenar datos alfabéticamente por nombre
+    const sortedData = [...filteredData].sort((a, b) => {
+        const nameA = normalizeName(a.nombre || '');
+        const nameB = normalizeName(b.nombre || '');
+        return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+    });
+    
     contenedor.innerHTML = '';
     
-    filteredData.forEach(item => {
+    sortedData.forEach(item => {
         const card = document.createElement('div');
         card.className = 'card';
         
