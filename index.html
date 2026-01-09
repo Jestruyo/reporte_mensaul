@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Mensual de Servicio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Reporte Mensual de Servicio</h1>
+            <p class="subtitle">Congregación Cordialidad</p>
+            <button id="btnRefresh" class="btn-refresh">🔄 Actualizar Datos</button>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="totalPersonas">-</div>
+                <div class="stat-label">Total de Personas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalHoras">-</div>
+                <div class="stat-label">Total de Horas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalRevisitas">-</div>
+                <div class="stat-label">Total Revisitas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalEstudios">-</div>
+                <div class="stat-label">Total Estudios</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <label for="filterGrupo">Filtrar por Grupo:</label>
+            <select id="filterGrupo">
+                <option value="all">Todos los grupos</option>
+            </select>
+            <label for="filterPredico">Filtrar por Predicación:</label>
+            <select id="filterPredico">
+                <option value="all">Todos</option>
+                <option value="Si - Predique">Sí predicó</option>
+                <option value="No - No predique">No predicó</option>
+            </select>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Cargando datos...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p>❌ Error al cargar los datos. Por favor, intenta de nuevo.</p>
+        </div>
+
+        <div id="contenedor" class="grid"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
