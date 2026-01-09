@@ -202,11 +202,8 @@ async function fetchData() {
         // Actualizar filtros de grupo
         updateGroupFilter();
         
-        // Aplicar filtros y mostrar datos
+        // Aplicar filtros y mostrar datos (esto también actualiza las estadísticas)
         applyFilters();
-        
-        // Actualizar estadísticas
-        updateStats();
         
         loading.style.display = 'none';
         
@@ -246,7 +243,9 @@ function applyFilters() {
         return matchGrupo && matchPredico;
     });
     
+    // Actualizar visualización y estadísticas
     displayData();
+    updateStats();
 }
 
 // Función para mostrar los datos
@@ -328,16 +327,22 @@ function updateStats() {
     // Total de personas es simplemente el número de registros filtrados
     const totalPersonasCount = filteredData.length;
     
-    // Calcular OK y Pendientes usando la misma lógica que getPersonasByStatus
+    // Calcular OK y Pendientes basado en los filtros aplicados
     const filterGrupo = document.getElementById('filterGrupo').value;
     const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
     
     let okCount = 0;
     let pendingCount = 0;
     
-    // Si hay un grupo específico filtrado
-    if (grupoNum && GRUPOS_LISTAS[grupoNum]) {
-        const listaGrupo = GRUPOS_LISTAS[grupoNum];
+    // Determinar qué grupos procesar
+    const gruposAProcesar = grupoNum && GRUPOS_LISTAS[grupoNum] 
+        ? [grupoNum] 
+        : Object.keys(GRUPOS_LISTAS).map(k => parseInt(k));
+    
+    gruposAProcesar.forEach(grupoId => {
+        if (!GRUPOS_LISTAS[grupoId]) return;
+        
+        const listaGrupo = GRUPOS_LISTAS[grupoId];
         // Crear un mapa para eliminar duplicados y mantener el nombre original
         const mapaPersonas = new Map();
         listaGrupo.forEach(personaLista => {
@@ -347,52 +352,21 @@ function updateStats() {
             }
         });
         
-        // Usar allData para la comparación con nombres originales
-        const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
-        
+        // Para cada persona en la lista del grupo, verificar si está en filteredData
         mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
-            // Buscar coincidencia usando la función flexible con los nombres originales
-            const found = personasDelGrupoReportadas.some(item => {
-                return namesMatch(item.nombre, nombreOriginal);
+            // Buscar si esta persona está en los datos filtrados actuales
+            const foundInFiltered = filteredData.some(item => {
+                return parseInt(item.grupo) === grupoId && namesMatch(item.nombre, nombreOriginal);
             });
             
-            if (found) {
+            if (foundInFiltered) {
                 okCount++;
             } else {
+                // Contar como pendiente: todas las personas de la lista que no están en filteredData
                 pendingCount++;
             }
         });
-    } else if (filterGrupo === 'all') {
-        // Si no hay filtro de grupo, contar todos los grupos
-        Object.keys(GRUPOS_LISTAS).forEach(grupoKey => {
-            const grupoNum = parseInt(grupoKey);
-            const listaGrupo = GRUPOS_LISTAS[grupoNum];
-            // Crear un mapa para eliminar duplicados y mantener el nombre original
-            const mapaPersonas = new Map();
-            listaGrupo.forEach(personaLista => {
-                const personaNormalizada = normalizeName(personaLista);
-                if (!mapaPersonas.has(personaNormalizada)) {
-                    mapaPersonas.set(personaNormalizada, personaLista);
-                }
-            });
-            
-            // Usar allData para la comparación con nombres originales
-            const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
-            
-            mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
-                // Buscar coincidencia usando la función flexible con los nombres originales
-                const found = personasDelGrupoReportadas.some(item => {
-                    return namesMatch(item.nombre, nombreOriginal);
-                });
-                
-                if (found) {
-                    okCount++;
-                } else {
-                    pendingCount++;
-                }
-            });
-        });
-    }
+    });
     
     // Actualizar todas las estadísticas
     totalPersonas.textContent = totalPersonasCount;
