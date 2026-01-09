@@ -16,6 +16,71 @@ let allData = [];
 let filteredData = [];
 let isAuthenticatedFlag = false; // Variable en memoria (se pierde al recargar)
 
+// ============================================
+// LISTAS DE PERSONAS POR GRUPO
+// ============================================
+// Lista de personas esperadas por grupo
+const GRUPOS_LISTAS = {
+    3: [
+        'Boris Márquez',
+        'Jesús Trujillo',
+        'Antonio Medina',
+        'Daniel Márquez',
+        'Will Herrera',
+        'Ana Tapia',
+        'Angélica Jinete',
+        'Brenda Márquez',
+        'Cenith Cabrera',
+        'Claudia Noriega',
+        'Ruby Rodríguez',
+        'Yurleidys Navarro',
+        'Acela Mercado',
+        'Blaider Guerrero',
+        'Boris Márquez',
+        'Carlos Rivera',
+        'Cindy García',
+        'Dina Rodelo',
+        'Elena Salazar',
+        'Jair Saltarín',
+        'Juan Rivera',
+        'Liceth Guerrero',
+        'Linda Márquez',
+        'María Herrera',
+        'Mariana Saltarín',
+        'Sara Trujillo',
+        'Vanessa Villa',
+        'Yeilis Guerrero'
+    ]
+    // Puedes agregar más grupos aquí:
+    // 1: ['Nombre 1', 'Nombre 2', ...],
+    // 2: ['Nombre 1', 'Nombre 2', ...],
+};
+
+// Función para normalizar nombres (quitar acentos, espacios extra, convertir a mayúsculas)
+function normalizeName(name) {
+    if (!name) return '';
+    return name
+        .trim()
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+        .replace(/\s+/g, ' '); // Normalizar espacios
+}
+
+// Función para verificar si una persona está en la lista del grupo
+function isPersonInGroupList(nombre, grupo) {
+    if (!grupo || !GRUPOS_LISTAS[grupo]) {
+        return null; // No hay lista para este grupo
+    }
+    
+    const listaGrupo = GRUPOS_LISTAS[grupo];
+    const nombreNormalizado = normalizeName(nombre);
+    
+    return listaGrupo.some(personaLista => {
+        return normalizeName(personaLista) === nombreNormalizado;
+    });
+}
+
 // Función para extraer números de texto (ej: "48 h" -> 48)
 function extractNumber(text) {
     if (!text) return 0;
@@ -149,10 +214,26 @@ function displayData() {
         
         const predicoClass = item.predico === 'Si - Predique' ? 'yes' : 'no';
         
+        // Verificar si la persona está en la lista del grupo
+        const grupoNum = parseInt(item.grupo);
+        const isInList = isPersonInGroupList(item.nombre, grupoNum);
+        let statusBadge = '';
+        
+        if (isInList !== null) {
+            if (isInList) {
+                statusBadge = '<span class="status-badge status-ok">✓ OK</span>';
+            } else {
+                statusBadge = '<span class="status-badge status-pending">⚠ Pendiente</span>';
+            }
+        }
+        
         card.innerHTML = `
             <div class="card-header">
                 <div>
-                    <div class="card-name">${item.nombre}</div>
+                    <div class="card-name">
+                        ${item.nombre}
+                        ${statusBadge}
+                    </div>
                     <div class="card-predico ${predicoClass}">${item.predico || 'No especificado'}</div>
                 </div>
                 <span class="card-grupo">Grupo ${item.grupo || 'N/A'}</span>
@@ -189,18 +270,34 @@ function updateStats() {
     const totalHoras = document.getElementById('totalHoras');
     const totalRevisitas = document.getElementById('totalRevisitas');
     const totalEstudios = document.getElementById('totalEstudios');
+    const totalOk = document.getElementById('totalOk');
+    const totalPending = document.getElementById('totalPending');
     
     const stats = filteredData.reduce((acc, item) => {
         acc.horas += item.horas || 0;
         acc.revisitas += item.revisitas || 0;
         acc.estudios += item.estudios || 0;
+        
+        // Verificar estado de comparación
+        const grupoNum = parseInt(item.grupo);
+        const isInList = isPersonInGroupList(item.nombre, grupoNum);
+        if (isInList !== null) {
+            if (isInList) {
+                acc.ok += 1;
+            } else {
+                acc.pending += 1;
+            }
+        }
+        
         return acc;
-    }, { horas: 0, revisitas: 0, estudios: 0 });
+    }, { horas: 0, revisitas: 0, estudios: 0, ok: 0, pending: 0 });
     
     totalPersonas.textContent = filteredData.length;
     totalHoras.textContent = stats.horas;
     totalRevisitas.textContent = stats.revisitas;
     totalEstudios.textContent = stats.estudios;
+    totalOk.textContent = stats.ok;
+    totalPending.textContent = stats.pending;
 }
 
 // ============================================
