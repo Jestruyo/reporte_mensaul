@@ -36,7 +36,7 @@ const GRUPOS_LISTAS = {
         'Deyber Echeverry',
         'Emelda López',
         'Enedys Tapia',
-        'Etilbia Theran',
+        'Etilvia Teheran',
         'Evelys Tafur',
         'Genys Pérez',
         'Isabella Alfaro',
