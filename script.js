@@ -316,13 +316,17 @@ function updateStats() {
     const totalOk = document.getElementById('totalOk');
     const totalPending = document.getElementById('totalPending');
     
-    // Calcular estadísticas básicas
+    // Calcular estadísticas básicas basadas en los datos filtrados
+    // filteredData ya contiene los datos filtrados por grupo y predicación
     const stats = filteredData.reduce((acc, item) => {
         acc.horas += item.horas || 0;
         acc.revisitas += item.revisitas || 0;
         acc.estudios += item.estudios || 0;
         return acc;
     }, { horas: 0, revisitas: 0, estudios: 0 });
+    
+    // Total de personas es simplemente el número de registros filtrados
+    const totalPersonasCount = filteredData.length;
     
     // Calcular OK y Pendientes usando la misma lógica que getPersonasByStatus
     const filterGrupo = document.getElementById('filterGrupo').value;
@@ -390,7 +394,8 @@ function updateStats() {
         });
     }
     
-    totalPersonas.textContent = filteredData.length;
+    // Actualizar todas las estadísticas
+    totalPersonas.textContent = totalPersonasCount;
     totalHoras.textContent = stats.horas;
     totalRevisitas.textContent = stats.revisitas;
     totalEstudios.textContent = stats.estudios;
