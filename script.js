@@ -5,7 +5,7 @@ const SHEET_TITLE = 'Respuestas de formulario 4'; // Nombre de la pestaña (alte
 const SHEET_RANGE = 'A2:I1000'; // Rango de datos (empezamos en A2 para omitir el encabezado)
 
 // CONFIGURACIÓN: Código de validación (cambia este código por el que desees)
-const VALIDATION_CODE = 'CORDIALIDAD2025';
+const VALIDATION_CODE = 'Reino1914';
 
 // URL para obtener los datos en formato JSON desde Google Sheets
 // Usamos gid en lugar del nombre de la pestaña para mayor confiabilidad
