@@ -271,6 +271,50 @@ header h1 {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+.filter-date {
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    background: white;
+    font-family: inherit;
+}
+
+.filter-date:hover {
+    border-color: #2563eb;
+}
+
+.filter-date:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-reset-fechas {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-reset-fechas:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-reset-fechas:active {
+    transform: translateY(0);
+}
+
 .loading {
     text-align: center;
     padding: 40px;
