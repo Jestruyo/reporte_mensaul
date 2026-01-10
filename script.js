@@ -287,6 +287,12 @@ async function fetchData() {
         // Actualizar filtros de grupo
         updateGroupFilter();
         
+        // Inicializar filtro de mes con el mes actual si no está establecido
+        const filterMes = document.getElementById('filterMes');
+        if (!filterMes || filterMes.value === 'all' || !filterMes.value) {
+            initializeMonthFilter();
+        }
+        
         // Aplicar filtros y mostrar datos (esto también actualiza las estadísticas)
         applyFilters();
         
@@ -319,18 +325,54 @@ function updateGroupFilter() {
 
 // Función para aplicar filtros
 function applyFilters() {
+    const filterMes = document.getElementById('filterMes').value;
     const filterGrupo = document.getElementById('filterGrupo').value;
     const filterPredico = document.getElementById('filterPredico').value;
     
     filteredData = allData.filter(item => {
         const matchGrupo = filterGrupo === 'all' || item.grupo == filterGrupo;
         const matchPredico = filterPredico === 'all' || item.predico === filterPredico;
-        return matchGrupo && matchPredico;
+        
+        // Filtro de mes
+        let matchMes = true;
+        if (filterMes !== 'all' && item.timestamp) {
+            try {
+                const itemDate = new Date(item.timestamp);
+                const mesSeleccionado = parseInt(filterMes);
+                const itemMonth = itemDate.getMonth();
+                const itemYear = itemDate.getFullYear();
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth();
+                
+                // Para el mes actual, verificar año y mes
+                // Para meses anteriores, verificar solo el mes (considerando que puede ser del año actual o anterior)
+                if (mesSeleccionado === currentMonth) {
+                    // Si selecciona el mes actual, mostrar solo del año actual
+                    matchMes = itemMonth === mesSeleccionado && itemYear === currentYear;
+                } else {
+                    // Para otros meses, mostrar de cualquier año que coincida con el mes
+                    matchMes = itemMonth === mesSeleccionado;
+                }
+            } catch (e) {
+                // Si hay error al parsear la fecha, no filtrar por mes
+                console.warn('Error al parsear fecha:', item.timestamp, e);
+                matchMes = true;
+            }
+        }
+        
+        return matchGrupo && matchPredico && matchMes;
     });
     
     // Actualizar visualización y estadísticas
     displayData();
     updateStats();
+}
+
+// Función para inicializar el filtro de mes con el mes actual
+function initializeMonthFilter() {
+    const filterMes = document.getElementById('filterMes');
+    const currentMonth = new Date().getMonth();
+    filterMes.value = currentMonth.toString();
 }
 
 // Función para mostrar los datos
@@ -741,8 +783,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar autenticación
     initAuth();
     
+    // Inicializar filtro de mes con el mes actual por defecto
+    initializeMonthFilter();
+    
     // Event listeners principales
     document.getElementById('btnRefresh').addEventListener('click', fetchData);
+    document.getElementById('filterMes').addEventListener('change', applyFilters);
     document.getElementById('filterGrupo').addEventListener('change', applyFilters);
     document.getElementById('filterPredico').addEventListener('change', applyFilters);
     
