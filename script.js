@@ -7,9 +7,426 @@ const SHEET_RANGE = 'A2:I1000'; // Rango de datos (empezamos en A2 para omitir e
 // CONFIGURACIÓN: Código de validación (cambia este código por el que desees)
 const VALIDATION_CODE = 'Reino1914';
 
+// CONFIGURACIÓN: Usar datos locales para testing
+// Cambia a true para usar los datos locales en lugar de hacer fetch a Google Sheets
+const USE_LOCAL_DATA = true; // Cambiar a true para testing local
+
 // URL para obtener los datos en formato JSON desde Google Sheets
 // Usamos gid en lugar del nombre de la pestaña para mayor confiabilidad
 const FULL_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}&range=${SHEET_RANGE}&tqx=out:json`;
+
+// Datos locales para testing (formato de respuesta de Google Sheets)
+const LOCAL_TEST_DATA = {
+    "version": "0.6",
+    "reqId": "0",
+    "status": "ok",
+    "sig": "415858834",
+    "table": {
+        "cols": [{
+            "id": "A",
+            "label": "",
+            "type": "datetime",
+            "pattern": "d/MM/yyyy H:mm:ss"
+        }, {
+            "id": "B",
+            "label": "",
+            "type": "string"
+        }, {
+            "id": "C",
+            "label": "",
+            "type": "number",
+            "pattern": "General"
+        }, {
+            "id": "D",
+            "label": "",
+            "type": "string"
+        }, {
+            "id": "E",
+            "label": "",
+            "type": "number",
+            "pattern": "General"
+        }, {
+            "id": "F",
+            "label": "",
+            "type": "number",
+            "pattern": "General"
+        }, {
+            "id": "G",
+            "label": "",
+            "type": "number",
+            "pattern": "General"
+        }, {
+            "id": "H",
+            "label": "",
+            "type": "number",
+            "pattern": "General"
+        }, {
+            "id": "I",
+            "label": "",
+            "type": "string"
+        }],
+        "rows": [{
+            "c": [{
+                "v": "Date(2026,0,2,12,52,31)",
+                "f": "2/01/2026 12:52:31"
+            }, {
+                "v": "Brenda Marquez"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 42.0,
+                "f": "42"
+            }, {
+                "v": 17.0,
+                "f": "17"
+            }, {
+                "v": 7.0,
+                "f": "7"
+            }, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,2,16,28,23)",
+                "f": "2/01/2026 16:28:23"
+            }, {
+                "v": "Boris marquez | Padre"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 15.0,
+                "f": "15"
+            }, null, {
+                "v": 1.0,
+                "f": "1"
+            }, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,2,16,29,46)",
+                "f": "2/01/2026 16:29:47"
+            }, {
+                "v": "Dina Rodelo"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 10.0,
+                "f": "10"
+            }, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,3,17,2,25)",
+                "f": "3/01/2026 17:02:26"
+            }, {
+                "v": "Jesus Trujillo"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 7.0,
+                "f": "7"
+            }, {
+                "v": 2.0,
+                "f": "2"
+            }, {
+                "v": 2.0,
+                "f": "2"
+            }, {
+                "v": 4.0,
+                "f": "4"
+            }, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,5,19,13,26)",
+                "f": "5/01/2026 19:13:26"
+            }, {
+                "v": "Yurleydis Navarro"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 30.0,
+                "f": "30"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": 1.0,
+                "f": "1"
+            }, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,6,19,1,48)",
+                "f": "6/01/2026 19:01:49"
+            }, {
+                "v": "Jair Saltarin"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, {
+                "v": 1.0,
+                "f": "1"
+            }, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,7,10,54,6)",
+                "f": "7/01/2026 10:54:06"
+            }, {
+                "v": "Claudia Noriega"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 23.0,
+                "f": "23"
+            }, {
+                "v": 8.0,
+                "f": "8"
+            }, {
+                "v": 1.0,
+                "f": "1"
+            }, {
+                "v": 18.0,
+                "f": "18"
+            }, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,7,10,55,59)",
+                "f": "7/01/2026 10:56:00"
+            }, {
+                "v": "Will Herrera"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,7,16,10,56)",
+                "f": "7/01/2026 16:10:56"
+            }, {
+                "v": "Cenith Cabrera"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, {
+                "v": 8.0,
+                "f": "8"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": 17.0,
+                "f": "17"
+            }, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,7,16,20,51)",
+                "f": "7/01/2026 16:20:52"
+            }, {
+                "v": "Antonio Medina"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, {
+                "v": 10.0,
+                "f": "10"
+            }, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,8,10,45,34)",
+                "f": "8/01/2026 10:45:34"
+            }, {
+                "v": "Ruby Rodriguez"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,9,10,4)",
+                "f": "9/01/2026 9:10:04"
+            }, {
+                "v": "Ana Tapia"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 50.0,
+                "f": "50"
+            }, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,9,35,0)",
+                "f": "9/01/2026 9:35:00"
+            }, {
+                "v": "Angelica Jinete"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 59.0,
+                "f": "59"
+            }, null, {
+                "v": 1.0,
+                "f": "1"
+            }, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,9,46,3)",
+                "f": "9/01/2026 9:46:03"
+            }, {
+                "v": "Linda Marquez"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,10,19,40)",
+                "f": "9/01/2026 10:19:41"
+            }, {
+                "v": "Maria Herrera"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, {
+                "v": 29.0,
+                "f": "29"
+            }, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,10,23,57)",
+                "f": "9/01/2026 10:23:58"
+            }, {
+                "v": "Mariana Saltarin"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,10,24,36)",
+                "f": "9/01/2026 10:24:37"
+            }, {
+                "v": "Acela Mercado"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,11,36,12)",
+                "f": "9/01/2026 11:36:12"
+            }, {
+                "v": "Vanessa Villa"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,14,22,50)",
+                "f": "9/01/2026 14:22:50"
+            }, {
+                "v": "Sarah Trujillo"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,9,16,43,29)",
+                "f": "9/01/2026 16:43:29"
+            }, {
+                "v": "Etilvia Teheran"
+            }, {
+                "v": 2.0,
+                "f": "2"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }],
+        "parsedNumHeaders": 0
+    }
+};
 
 // Variables globales
 let allData = [];
@@ -224,11 +641,71 @@ function extractNumber(text) {
     return match ? parseInt(match[0]) : 0;
 }
 
+// Función para parsear el formato Date de Google Sheets
+// Convierte "Date(2026,0,2,12,52,31)" o timestamp Unix a un objeto Date
+function parseGoogleSheetsDate(dateValue) {
+    if (!dateValue && dateValue !== 0) return null;
+    
+    // Si ya es un objeto Date, devolverlo
+    if (dateValue instanceof Date) {
+        return dateValue;
+    }
+    
+    // Si es un número, puede ser un timestamp de Unix (milliseconds)
+    if (typeof dateValue === 'number') {
+        try {
+            const date = new Date(dateValue);
+            if (!isNaN(date.getTime())) {
+                return date;
+            }
+        } catch (e) {
+            console.warn('Error al parsear timestamp numérico:', dateValue, e);
+        }
+    }
+    
+    // Si es un string con formato "Date(2026,0,2,12,52,31)"
+    if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+        try {
+            // Extraer los parámetros: Date(año, mes, día, hora, minuto, segundo)
+            const match = dateValue.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+))?(?:,(\d+))?(?:,(\d+))?\)/);
+            if (match) {
+                const year = parseInt(match[1]);
+                const month = parseInt(match[2]); // 0-11 en JavaScript
+                const day = parseInt(match[3]);
+                const hour = match[4] ? parseInt(match[4]) : 0;
+                const minute = match[5] ? parseInt(match[5]) : 0;
+                const second = match[6] ? parseInt(match[6]) : 0;
+                
+                return new Date(year, month, day, hour, minute, second);
+            }
+        } catch (e) {
+            console.warn('Error al parsear formato Date de Google Sheets:', dateValue, e);
+        }
+    }
+    
+    // Intentar parseo estándar como fallback (para strings ISO, etc.)
+    if (typeof dateValue === 'string') {
+        try {
+            const date = new Date(dateValue);
+            if (!isNaN(date.getTime())) {
+                return date;
+            }
+        } catch (e) {
+            console.warn('Error al parsear fecha:', dateValue, e);
+        }
+    }
+    
+    return null;
+}
+
 // Función para formatear fecha
-function formatDate(dateString) {
-    if (!dateString) return '';
+function formatDate(dateValue) {
+    if (!dateValue) return '';
     try {
-        const date = new Date(dateString);
+        const date = dateValue instanceof Date ? dateValue : parseGoogleSheetsDate(dateValue);
+        if (!date || isNaN(date.getTime())) {
+            return '';
+        }
         return date.toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'short',
@@ -237,8 +714,46 @@ function formatDate(dateString) {
             minute: '2-digit'
         });
     } catch (e) {
-        return dateString;
+        return '';
     }
+}
+
+// Función para procesar datos (ya sea de Google Sheets o locales)
+function processData(jsonData) {
+    const rows = jsonData.table.rows;
+    
+    // Procesar los datos
+    allData = rows.map((row, index) => {
+        const cells = row.c;
+        const timestampValue = cells[0]?.v || '';
+        // Parsear el timestamp correctamente desde el formato de Google Sheets
+        const parsedDate = parseGoogleSheetsDate(timestampValue);
+        
+        return {
+            timestamp: parsedDate, // Guardar como objeto Date
+            timestampOriginal: timestampValue, // Guardar original para referencia
+            nombre: cells[1]?.v || '',
+            grupo: cells[2]?.v || '',
+            predico: cells[3]?.v || '',
+            horas: extractNumber(cells[4]?.v || ''),
+            revisitas: extractNumber(cells[5]?.v || ''),
+            estudios: extractNumber(cells[6]?.v || ''),
+            publicaciones: cells[7]?.v || '',
+            supervision: cells[8]?.v || ''
+        };
+    }).filter(item => item.nombre); // Filtrar filas vacías
+
+    // Actualizar filtros de grupo
+    updateGroupFilter();
+    
+    // Inicializar filtro de mes con el mes actual si no está establecido
+    const filterMes = document.getElementById('filterMes');
+    if (!filterMes || filterMes.value === 'all' || !filterMes.value) {
+        initializeMonthFilter();
+    }
+    
+    // Aplicar filtros y mostrar datos (esto también actualiza las estadísticas)
+    applyFilters();
 }
 
 // Función para obtener datos de Google Sheets
@@ -252,49 +767,32 @@ async function fetchData() {
     contenedor.innerHTML = '';
 
     try {
-        const response = await fetch(FULL_URL);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        let jsonData;
+        
+        // Si USE_LOCAL_DATA está activado, usar datos locales
+        if (USE_LOCAL_DATA) {
+            console.log('📦 Usando datos locales para testing...');
+            jsonData = LOCAL_TEST_DATA;
+        } else {
+            // Hacer fetch a Google Sheets
+            const response = await fetch(FULL_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const text = await response.text();
+            
+            // Limpiar la respuesta de Google para obtener JSON válido
+            const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/);
+            if (!jsonMatch) {
+                throw new Error('No se pudo parsear la respuesta de Google Sheets');
+            }
+            
+            jsonData = JSON.parse(jsonMatch[1]);
         }
         
-        const text = await response.text();
-        
-        // Limpiar la respuesta de Google para obtener JSON válido
-        const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/);
-        if (!jsonMatch) {
-            throw new Error('No se pudo parsear la respuesta de Google Sheets');
-        }
-        
-        const jsonData = JSON.parse(jsonMatch[1]);
-        const rows = jsonData.table.rows;
-        
-        // Procesar los datos
-        allData = rows.map((row, index) => {
-            const cells = row.c;
-            return {
-                timestamp: cells[0]?.v || '',
-                nombre: cells[1]?.v || '',
-                grupo: cells[2]?.v || '',
-                predico: cells[3]?.v || '',
-                horas: extractNumber(cells[4]?.v || ''),
-                revisitas: extractNumber(cells[5]?.v || ''),
-                estudios: extractNumber(cells[6]?.v || ''),
-                publicaciones: cells[7]?.v || '',
-                supervision: cells[8]?.v || ''
-            };
-        }).filter(item => item.nombre); // Filtrar filas vacías
-
-        // Actualizar filtros de grupo
-        updateGroupFilter();
-        
-        // Inicializar filtro de mes con el mes actual si no está establecido
-        const filterMes = document.getElementById('filterMes');
-        if (!filterMes || filterMes.value === 'all' || !filterMes.value) {
-            initializeMonthFilter();
-        }
-        
-        // Aplicar filtros y mostrar datos (esto también actualiza las estadísticas)
-        applyFilters();
+        // Procesar los datos (común para ambos casos)
+        processData(jsonData);
         
         loading.style.display = 'none';
         
@@ -330,28 +828,29 @@ function matchMonthFilter(item, filterMes) {
     }
     
     try {
-        const itemDate = new Date(item.timestamp);
-        if (isNaN(itemDate.getTime())) {
-            return true; // Si la fecha no es válida, no filtrar
+        // El timestamp ya debería ser un objeto Date parseado
+        let itemDate = item.timestamp;
+        
+        // Si no es un Date, intentar parsearlo
+        if (!(itemDate instanceof Date)) {
+            itemDate = parseGoogleSheetsDate(item.timestamp);
+        }
+        
+        if (!itemDate || isNaN(itemDate.getTime())) {
+            return false; // Si la fecha no es válida, filtrar (no mostrar)
         }
         
         const mesSeleccionado = parseInt(filterMes);
         const itemMonth = itemDate.getMonth();
         const itemYear = itemDate.getFullYear();
         const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth();
         
-        // Para el mes actual, verificar año y mes del año actual
-        if (mesSeleccionado === currentMonth) {
-            return itemMonth === mesSeleccionado && itemYear === currentYear;
-        } else {
-            // Para otros meses, mostrar de cualquier año que coincida con el mes
-            // Esto permite ver meses anteriores del año actual o años anteriores
-            return itemMonth === mesSeleccionado;
-        }
+        // Siempre comparar año y mes del año actual para evitar mostrar datos de meses incorrectos
+        // Esto asegura que si seleccionas febrero, solo muestre datos de febrero del año actual
+        return itemMonth === mesSeleccionado && itemYear === currentYear;
     } catch (e) {
         console.warn('Error al parsear fecha:', item.timestamp, e);
-        return true; // Si hay error, no filtrar
+        return false; // Si hay error, filtrar (no mostrar)
     }
 }
 
