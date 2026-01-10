@@ -109,9 +109,36 @@ const GRUPOS_LISTAS = {
         'Sarah Trujillo',
         'Vanessa Villa',
         'Yeilis Guerrero'
+    ],
+    4: [
+        'Juan Cardenas',
+        'Isaac Molina',
+        'PIsaac Algarin',
+        'Leonardo Roa',
+        'Naren Herrera',
+        'Carmen Deford',
+        'Cindy Solano',
+        'Regina Cantillo',
+        'Rosmery Molina',
+        'Ana Cabrera',
+        'Briceida Gonzales',
+        'David Cervantes',
+        'Gleiryn Herrera',
+        'Karla Rodelo',
+        'Katia Ávila',
+        'Leidy de la Torre',
+        'Ludys Mendoza',
+        'Luz Escobar',
+        'Margarita Ríos',
+        'María Martinez',
+        'María Serpa',
+        'Matias Gomez Guerrero',
+        'Natalia Tuñon',
+        'Sandra Solano',
+        'Sara Solano',
+        'Sebastián Tuñon'
     ]
-    // Puedes agregar más grupos aquí:
-    // 1: ['Nombre 1', 'Nombre 2', ...],
+    // Puedes agregar más grupos aquí si los necesitas
 };
 
 // Función para normalizar nombres (quitar acentos, espacios extra, convertir a mayúsculas)
