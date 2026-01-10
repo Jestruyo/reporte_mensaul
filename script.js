@@ -323,6 +323,38 @@ function updateGroupFilter() {
     });
 }
 
+// Función auxiliar para aplicar filtro de mes a un item
+function matchMonthFilter(item, filterMes) {
+    if (filterMes === 'all' || !item.timestamp) {
+        return true;
+    }
+    
+    try {
+        const itemDate = new Date(item.timestamp);
+        if (isNaN(itemDate.getTime())) {
+            return true; // Si la fecha no es válida, no filtrar
+        }
+        
+        const mesSeleccionado = parseInt(filterMes);
+        const itemMonth = itemDate.getMonth();
+        const itemYear = itemDate.getFullYear();
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth();
+        
+        // Para el mes actual, verificar año y mes del año actual
+        if (mesSeleccionado === currentMonth) {
+            return itemMonth === mesSeleccionado && itemYear === currentYear;
+        } else {
+            // Para otros meses, mostrar de cualquier año que coincida con el mes
+            // Esto permite ver meses anteriores del año actual o años anteriores
+            return itemMonth === mesSeleccionado;
+        }
+    } catch (e) {
+        console.warn('Error al parsear fecha:', item.timestamp, e);
+        return true; // Si hay error, no filtrar
+    }
+}
+
 // Función para aplicar filtros
 function applyFilters() {
     const filterMes = document.getElementById('filterMes').value;
@@ -332,33 +364,7 @@ function applyFilters() {
     filteredData = allData.filter(item => {
         const matchGrupo = filterGrupo === 'all' || item.grupo == filterGrupo;
         const matchPredico = filterPredico === 'all' || item.predico === filterPredico;
-        
-        // Filtro de mes
-        let matchMes = true;
-        if (filterMes !== 'all' && item.timestamp) {
-            try {
-                const itemDate = new Date(item.timestamp);
-                const mesSeleccionado = parseInt(filterMes);
-                const itemMonth = itemDate.getMonth();
-                const itemYear = itemDate.getFullYear();
-                const currentYear = new Date().getFullYear();
-                const currentMonth = new Date().getMonth();
-                
-                // Para el mes actual, verificar año y mes
-                // Para meses anteriores, verificar solo el mes (considerando que puede ser del año actual o anterior)
-                if (mesSeleccionado === currentMonth) {
-                    // Si selecciona el mes actual, mostrar solo del año actual
-                    matchMes = itemMonth === mesSeleccionado && itemYear === currentYear;
-                } else {
-                    // Para otros meses, mostrar de cualquier año que coincida con el mes
-                    matchMes = itemMonth === mesSeleccionado;
-                }
-            } catch (e) {
-                // Si hay error al parsear la fecha, no filtrar por mes
-                console.warn('Error al parsear fecha:', item.timestamp, e);
-                matchMes = true;
-            }
-        }
+        const matchMes = matchMonthFilter(item, filterMes);
         
         return matchGrupo && matchPredico && matchMes;
     });
@@ -454,8 +460,10 @@ function updateStats() {
     // Total de personas es simplemente el número de registros filtrados
     const totalPersonasCount = filteredData.length;
     
-    // Calcular OK y Pendientes basado en los filtros aplicados
+    // Calcular OK y Pendientes basado en los filtros aplicados (grupo y mes, pero no predicación)
+    // Esto permite ver quién reportó o no en el mes, independientemente de si predicó
     const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
     const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
     
     let okCount = 0;
@@ -470,6 +478,16 @@ function updateStats() {
         if (!GRUPOS_LISTAS[grupoId]) return;
         
         const listaGrupo = GRUPOS_LISTAS[grupoId];
+        
+        // Filtrar datos del grupo aplicando solo filtros de grupo y mes (no predicación)
+        // Esto es importante para OK/Pendientes: queremos saber quién reportó en el mes,
+        // independientemente de si predicó o no
+        const datosDelGrupoYMes = allData.filter(item => {
+            const matchGrupo = parseInt(item.grupo) === grupoId;
+            const matchMes = matchMonthFilter(item, filterMes);
+            return matchGrupo && matchMes;
+        });
+        
         // Crear un mapa para eliminar duplicados y mantener el nombre original
         const mapaPersonas = new Map();
         listaGrupo.forEach(personaLista => {
@@ -479,17 +497,17 @@ function updateStats() {
             }
         });
         
-        // Para cada persona en la lista del grupo, verificar si está en filteredData
+        // Para cada persona en la lista del grupo, verificar si reportó en el mes filtrado
         mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
-            // Buscar si esta persona está en los datos filtrados actuales
-            const foundInFiltered = filteredData.some(item => {
-                return parseInt(item.grupo) === grupoId && namesMatch(item.nombre, nombreOriginal);
+            // Buscar si esta persona reportó en el mes filtrado (sin importar si predicó)
+            const foundInMonth = datosDelGrupoYMes.some(item => {
+                return namesMatch(item.nombre, nombreOriginal);
             });
             
-            if (foundInFiltered) {
+            if (foundInMonth) {
                 okCount++;
             } else {
-                // Contar como pendiente: todas las personas de la lista que no están en filteredData
+                // Contar como pendiente: personas de la lista que no reportaron en el mes filtrado
                 pendingCount++;
             }
         });
@@ -630,14 +648,26 @@ function initAuth() {
 // Obtener personas OK o pendientes según el grupo filtrado
 function getPersonasByStatus(status) {
     const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
     const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
     
     const personas = [];
     
-    // Si hay un grupo específico filtrado, usar ese grupo
-    if (grupoNum && GRUPOS_LISTAS[grupoNum]) {
-        const listaGrupo = GRUPOS_LISTAS[grupoNum];
-        const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
+    // Determinar qué grupos procesar
+    const gruposAProcesar = grupoNum && GRUPOS_LISTAS[grupoNum] 
+        ? [grupoNum] 
+        : Object.keys(GRUPOS_LISTAS).map(k => parseInt(k));
+    
+    gruposAProcesar.forEach(grupoId => {
+        if (!GRUPOS_LISTAS[grupoId]) return;
+        
+        const listaGrupo = GRUPOS_LISTAS[grupoId];
+        
+        // Filtrar datos del grupo aplicando el filtro de mes (no filtro de predicación para OK/Pendientes)
+        // Esto permite ver quién reportó o no en el mes seleccionado, independientemente de si predicó
+        const personasDelGrupoFiltradas = allData.filter(item => {
+            return parseInt(item.grupo) === grupoId && matchMonthFilter(item, filterMes);
+        });
         
         // Crear un mapa para eliminar duplicados y mantener el nombre original
         const mapaPersonas = new Map();
@@ -649,65 +679,37 @@ function getPersonasByStatus(status) {
         });
         
         mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
-            // Buscar coincidencia usando la función flexible con los nombres originales
-            const isReportada = personasDelGrupoReportadas.some(item => {
+            // Buscar si esta persona reportó en el mes filtrado
+            const isReportada = personasDelGrupoFiltradas.some(item => {
                 return namesMatch(item.nombre, nombreOriginal);
             });
             
             if (status === 'ok' && isReportada) {
                 personas.push({
                     nombre: nombreOriginal,
-                    grupo: grupoNum,
+                    grupo: grupoId,
                     reportada: true
                 });
             } else if (status === 'pending' && !isReportada) {
                 personas.push({
                     nombre: nombreOriginal,
-                    grupo: grupoNum,
+                    grupo: grupoId,
                     reportada: false
                 });
             }
         });
-    } else {
-        // Si no hay filtro de grupo, mostrar todos los grupos
-        Object.keys(GRUPOS_LISTAS).forEach(grupoKey => {
-            const grupoNum = parseInt(grupoKey);
-            const listaGrupo = GRUPOS_LISTAS[grupoNum];
-            const personasDelGrupoReportadas = allData.filter(item => parseInt(item.grupo) === grupoNum);
-            
-            // Crear un mapa para eliminar duplicados y mantener el nombre original
-            const mapaPersonas = new Map();
-            listaGrupo.forEach(personaLista => {
-                const personaNormalizada = normalizeName(personaLista);
-                if (!mapaPersonas.has(personaNormalizada)) {
-                    mapaPersonas.set(personaNormalizada, personaLista);
-                }
-            });
-            
-            mapaPersonas.forEach((nombreOriginal, personaNormalizada) => {
-                // Buscar coincidencia usando la función flexible con los nombres originales
-                const isReportada = personasDelGrupoReportadas.some(item => {
-                    return namesMatch(item.nombre, nombreOriginal);
-                });
-                
-                if (status === 'ok' && isReportada) {
-                    personas.push({
-                        nombre: nombreOriginal,
-                        grupo: grupoNum,
-                        reportada: true
-                    });
-                } else if (status === 'pending' && !isReportada) {
-                    personas.push({
-                        nombre: nombreOriginal,
-                        grupo: grupoNum,
-                        reportada: false
-                    });
-                }
-            });
-        });
-    }
+    });
     
     return personas;
+}
+
+// Función para obtener el nombre del mes en español
+function getMonthName(monthIndex) {
+    const meses = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return meses[parseInt(monthIndex)] || '';
 }
 
 // Mostrar modal con lista de personas
@@ -718,17 +720,26 @@ function showListModal(status) {
     
     const personas = getPersonasByStatus(status);
     const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
     
-    // Configurar título
+    // Configurar título con información del mes y grupo
+    let titulo = '';
+    const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
+    const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
+    
     if (status === 'ok') {
-        modalTitle.textContent = filterGrupo === 'all' 
-            ? '✓ Personas que han Reportado' 
-            : `✓ Personas del Grupo ${filterGrupo} que han Reportado`;
+        titulo = `✓ Personas del ${grupoTexto} que han Reportado`;
+        if (filterMes !== 'all') {
+            titulo += ` en ${mesNombre}`;
+        }
     } else {
-        modalTitle.textContent = filterGrupo === 'all' 
-            ? '⚠ Personas Pendientes por Reportar' 
-            : `⚠ Personas del Grupo ${filterGrupo} Pendientes por Reportar`;
+        titulo = `⚠ Personas del ${grupoTexto} Pendientes por Reportar`;
+        if (filterMes !== 'all') {
+            titulo += ` en ${mesNombre}`;
+        }
     }
+    
+    modalTitle.textContent = titulo;
     
     // Generar contenido
     if (personas.length === 0) {
