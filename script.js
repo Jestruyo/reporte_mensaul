@@ -113,7 +113,7 @@ const GRUPOS_LISTAS = {
     4: [
         'Juan Cardenas',
         'Isaac Molina',
-        'PIsaac Algarin',
+        'Isaac Algarin',
         'Leonardo Roa',
         'Naren Herrera',
         'Carmen Deford',
