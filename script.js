@@ -21,6 +21,35 @@ let isAuthenticatedFlag = false; // Variable en memoria (se pierde al recargar)
 // ============================================
 // Lista de personas esperadas por grupo
 const GRUPOS_LISTAS = {
+    1: [
+        'Carlos Cortez',
+        'Juan Lozano',
+        'Edwin Gutiérrez',
+        'Cristian Serpa',
+        'Mariano Jiménez',
+        'Alba Sierra',
+        'Esther Rua',
+        'Jaqueline Tuñon',
+        'Maria Ibarra',
+        'Olga Lozano',
+        'Raquel Escorcia',
+        'Alan Jiménez',
+        'Ana Ortiz',
+        'Aurora Vázquez',
+        'Cristian Serpa Orozco',
+        'Darlis Serpa',
+        'Edinson Palomino',
+        'Elizabeth Arena',
+        'Erick Jiménez',
+        'Ilsia Vázquez',
+        'Janeth Mattos',
+        'Karina Jiménez',
+        'Lina Paez',
+        'Matias Cortez',
+        'Osiris Jiménez',
+        'Patricia Nieto',
+        'Samly Jiménez'
+    ],
     2: [
         'Emiro Tapia',
         'Luis Robles',
