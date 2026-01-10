@@ -241,50 +241,6 @@ function formatDate(dateString) {
     }
 }
 
-// Función para obtener el primer día del mes actual
-function getFirstDayOfCurrentMonth() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    return new Date(year, month, 1);
-}
-
-// Función para obtener el último día del mes actual
-function getLastDayOfCurrentMonth() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    return new Date(year, month + 1, 0);
-}
-
-// Función para formatear fecha para input type="date" (YYYY-MM-DD)
-function formatDateForInput(date) {
-    if (!date) return '';
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-// Función para inicializar las fechas con el mes actual
-function initializeDateFilters() {
-    const fechaDesde = document.getElementById('filterFechaDesde');
-    const fechaHasta = document.getElementById('filterFechaHasta');
-    
-    const firstDay = getFirstDayOfCurrentMonth();
-    const lastDay = getLastDayOfCurrentMonth();
-    
-    fechaDesde.value = formatDateForInput(firstDay);
-    fechaHasta.value = formatDateForInput(lastDay);
-}
-
-// Función para resetear las fechas al mes actual
-function resetDateFilters() {
-    initializeDateFilters();
-    applyFilters();
-}
-
 // Función para obtener datos de Google Sheets
 async function fetchData() {
     const loading = document.getElementById('loading');
@@ -365,41 +321,11 @@ function updateGroupFilter() {
 function applyFilters() {
     const filterGrupo = document.getElementById('filterGrupo').value;
     const filterPredico = document.getElementById('filterPredico').value;
-    const filterFechaDesde = document.getElementById('filterFechaDesde').value;
-    const filterFechaHasta = document.getElementById('filterFechaHasta').value;
     
     filteredData = allData.filter(item => {
         const matchGrupo = filterGrupo === 'all' || item.grupo == filterGrupo;
         const matchPredico = filterPredico === 'all' || item.predico === filterPredico;
-        
-        // Filtro de fecha
-        let matchFecha = true;
-        if (item.timestamp) {
-            try {
-                const itemDate = new Date(item.timestamp);
-                const desdeDate = filterFechaDesde ? new Date(filterFechaDesde) : null;
-                const hastaDate = filterFechaHasta ? new Date(filterFechaHasta) : null;
-                
-                if (desdeDate) {
-                    desdeDate.setHours(0, 0, 0, 0); // Inicio del día
-                    if (itemDate < desdeDate) {
-                        matchFecha = false;
-                    }
-                }
-                
-                if (hastaDate) {
-                    hastaDate.setHours(23, 59, 59, 999); // Fin del día
-                    if (itemDate > hastaDate) {
-                        matchFecha = false;
-                    }
-                }
-            } catch (e) {
-                // Si hay error al parsear la fecha, no filtrar por fecha
-                console.warn('Error al parsear fecha:', item.timestamp, e);
-            }
-        }
-        
-        return matchGrupo && matchPredico && matchFecha;
+        return matchGrupo && matchPredico;
     });
     
     // Actualizar visualización y estadísticas
@@ -815,20 +741,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar autenticación
     initAuth();
     
-    // Inicializar fechas con el mes actual por defecto
-    initializeDateFilters();
-    
     // Event listeners principales
     document.getElementById('btnRefresh').addEventListener('click', fetchData);
     document.getElementById('filterGrupo').addEventListener('change', applyFilters);
     document.getElementById('filterPredico').addEventListener('change', applyFilters);
-    
-    // Event listeners para campos de fecha
-    document.getElementById('filterFechaDesde').addEventListener('change', applyFilters);
-    document.getElementById('filterFechaHasta').addEventListener('change', applyFilters);
-    
-    // Event listener para botón de resetear fechas
-    document.getElementById('btnResetFechas').addEventListener('click', resetDateFilters);
     
     // Event listeners para las tarjetas de estadísticas
     document.getElementById('statOk').addEventListener('click', () => showListModal('ok'));
