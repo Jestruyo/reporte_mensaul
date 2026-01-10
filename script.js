@@ -5,7 +5,7 @@ const SHEET_TITLE = 'Respuestas de formulario 4'; // Nombre de la pestaña (alte
 const SHEET_RANGE = 'A2:I1000'; // Rango de datos (empezamos en A2 para omitir el encabezado)
 
 // CONFIGURACIÓN: Código de validación (cambia este código por el que desees)
-const VALIDATION_CODE = 'Reino1914';
+const VALIDATION_CODE = '1914';
 
 // CONFIGURACIÓN: Usar datos locales para testing
 // Cambia a true para usar los datos locales en lugar de hacer fetch a Google Sheets
