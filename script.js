@@ -528,7 +528,7 @@ const GRUPOS_LISTAS = {
         'Mariana Saltarín',
         'Sarah Trujillo',
         'Vanessa Villa',
-        'Yeilis Guerrero'
+        'Yeilis Gerrero'
     ],
     4: [
         'Juan Cardenas',
