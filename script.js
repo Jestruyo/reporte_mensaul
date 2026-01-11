@@ -9,7 +9,7 @@ const VALIDATION_CODE = '1914';
 
 // CONFIGURACIÓN: Usar datos locales para testing
 // Cambia a true para usar los datos locales en lugar de hacer fetch a Google Sheets
-const USE_LOCAL_DATA = false; // Cambiar a true para testing local
+const USE_LOCAL_DATA = true;  // Cambiar a true para testing local
 
 // URL para obtener los datos en formato JSON desde Google Sheets
 // Usamos gid en lugar del nombre de la pestaña para mayor confiabilidad
