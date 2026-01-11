@@ -9,7 +9,7 @@ const VALIDATION_CODE = '1914';
 
 // CONFIGURACIÓN: Usar datos locales para testing
 // Cambia a true para usar los datos locales en lugar de hacer fetch a Google Sheets
-const USE_LOCAL_DATA = true;  // Cambiar a true para testing local
+const USE_LOCAL_DATA = false;  // Cambiar a true para testing local
 
 // URL para obtener los datos en formato JSON desde Google Sheets
 // Usamos gid en lugar del nombre de la pestaña para mayor confiabilidad
@@ -20,7 +20,7 @@ const LOCAL_TEST_DATA = {
     "version": "0.6",
     "reqId": "0",
     "status": "ok",
-    "sig": "415858834",
+    "sig": "866539673",
     "table": {
         "cols": [{
             "id": "A",
@@ -171,7 +171,10 @@ const LOCAL_TEST_DATA = {
             }, {
                 "v": 1.0,
                 "f": "1"
-            }, null, {
+            }, {
+                "v": 1.0,
+                "f": "1"
+            }, {
                 "v": null
             }]
         }, {
@@ -242,7 +245,10 @@ const LOCAL_TEST_DATA = {
                 "f": "3"
             }, {
                 "v": "Si - Predique"
-            }, null, {
+            }, {
+                "v": 48.0,
+                "f": "48"
+            }, {
                 "v": 8.0,
                 "f": "8"
             }, {
@@ -265,7 +271,10 @@ const LOCAL_TEST_DATA = {
                 "f": "3"
             }, {
                 "v": "Si - Predique"
-            }, null, null, null, {
+            }, {
+                "v": 16.0,
+                "f": "16"
+            }, null, null, {
                 "v": 10.0,
                 "f": "10"
             }, {
@@ -282,7 +291,13 @@ const LOCAL_TEST_DATA = {
                 "f": "3"
             }, {
                 "v": "Si - Predique"
-            }, null, null, null, null, {
+            }, {
+                "v": 57.0,
+                "f": "57"
+            }, null, {
+                "v": 10.0,
+                "f": "10"
+            }, null, {
                 "v": null
             }]
         }, {
@@ -420,10 +435,66 @@ const LOCAL_TEST_DATA = {
                 "f": "2"
             }, {
                 "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,11,11,14,35)",
+                "f": "11/01/2026 11:14:35"
+            }, {
+                "v": "Daniel Márquez"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
             }, null, null, {
                 "v": 1.0,
                 "f": "1"
             }, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,11,11,20,13)",
+                "f": "11/01/2026 11:20:13"
+            }, {
+                "v": "Blaider Gerrero"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,11,11,25,37)",
+                "f": "11/01/2026 11:25:38"
+            }, {
+                "v": "Lizeht Gerrero"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
+                "v": null
+            }]
+        }, {
+            "c": [{
+                "v": "Date(2026,0,11,12,55,55)",
+                "f": "11/01/2026 12:55:55"
+            }, {
+                "v": "Yeilis Gerrero"
+            }, {
+                "v": 3.0,
+                "f": "3"
+            }, {
+                "v": "Si - Predique"
+            }, null, null, null, null, {
                 "v": null
             }]
         }],
