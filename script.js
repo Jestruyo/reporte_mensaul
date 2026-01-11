@@ -420,7 +420,10 @@ const LOCAL_TEST_DATA = {
                 "f": "2"
             }, {
                 "v": "Si - Predique"
-            }, null, null, null, null, {
+            }, null, null, {
+                "v": 1.0,
+                "f": "1"
+            }, null, {
                 "v": null
             }]
         }],
@@ -1211,6 +1214,111 @@ function getMonthName(monthIndex) {
     return meses[parseInt(monthIndex)] || '';
 }
 
+// Función para obtener estudios agrupados por grupo según los filtros aplicados
+function getEstudiosByGrupo() {
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
+    const filterPredico = document.getElementById('filterPredico').value;
+    const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
+    
+    // Objeto para almacenar estudios por grupo
+    const estudiosPorGrupo = {};
+    
+    // Determinar qué grupos procesar
+    const gruposAProcesar = grupoNum && GRUPOS_LISTAS[grupoNum] 
+        ? [grupoNum] 
+        : Object.keys(GRUPOS_LISTAS).map(k => parseInt(k));
+    
+    gruposAProcesar.forEach(grupoId => {
+        // Filtrar datos del grupo aplicando todos los filtros
+        const datosDelGrupo = allData.filter(item => {
+            const matchGrupo = parseInt(item.grupo) === grupoId;
+            const matchMes = matchMonthFilter(item, filterMes);
+            const matchPredico = filterPredico === 'all' || item.predico === filterPredico;
+            
+            return matchGrupo && matchMes && matchPredico;
+        });
+        
+        // Sumar estudios del grupo
+        const totalEstudiosGrupo = datosDelGrupo.reduce((sum, item) => {
+            return sum + (item.estudios || 0);
+        }, 0);
+        
+        // Mostrar grupo si tiene estudios, o si hay un filtro específico de grupo (para mostrar 0)
+        if (totalEstudiosGrupo > 0 || (filterGrupo !== 'all' && grupoNum === grupoId)) {
+            estudiosPorGrupo[grupoId] = {
+                grupo: grupoId,
+                total: totalEstudiosGrupo,
+                cantidad: datosDelGrupo.length
+            };
+        }
+    });
+    
+    return estudiosPorGrupo;
+}
+
+// Función para mostrar modal con estudios por grupo
+function showEstudiosModal() {
+    const modal = document.getElementById('listModal');
+    const modalTitle = document.getElementById('listModalTitle');
+    const modalContent = document.getElementById('listModalContent');
+    
+    const estudiosPorGrupo = getEstudiosByGrupo();
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
+    const filterPredico = document.getElementById('filterPredico').value;
+    
+    // Configurar título con información del mes y grupo
+    const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
+    const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
+    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
+    
+    let titulo = `📚 Estudios del ${grupoTexto}${predicoTexto}`;
+    if (filterMes !== 'all') {
+        titulo += ` en ${mesNombre}`;
+    }
+    
+    modalTitle.textContent = titulo;
+    
+    // Generar contenido
+    const gruposArray = Object.keys(estudiosPorGrupo).map(k => estudiosPorGrupo[k]);
+    
+    if (gruposArray.length === 0) {
+        modalContent.innerHTML = '<div class="person-list-item empty">No hay estudios registrados con los filtros seleccionados</div>';
+    } else {
+        // Ordenar por grupo
+        gruposArray.sort((a, b) => a.grupo - b.grupo);
+        
+        let html = '';
+        gruposArray.forEach(item => {
+            html += `<div class="person-list-group">
+                <div class="person-list-group-title">Grupo ${item.grupo}</div>
+                <div class="person-list-item" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span><strong>Total de Estudios:</strong></span>
+                    <span style="font-size: 1.2em; color: #2563eb; font-weight: bold;">${item.total}</span>
+                </div>
+                <div class="person-list-item" style="font-size: 0.9em; color: #666; padding-top: 5px;">
+                    ${item.cantidad} ${item.cantidad === 1 ? 'persona reportó' : 'personas reportaron'}
+                </div>
+            </div>`;
+        });
+        
+        // Agregar total general si hay múltiples grupos
+        if (filterGrupo === 'all' && gruposArray.length > 1) {
+            const totalGeneral = gruposArray.reduce((sum, item) => sum + item.total, 0);
+            html = `<div class="person-list-group" style="background: #f0f7ff; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <div class="person-list-group-title" style="font-size: 1.2em; margin-bottom: 10px;">Total General</div>
+                <div style="font-size: 1.5em; color: #2563eb; font-weight: bold; text-align: center;">${totalGeneral} Estudios</div>
+            </div>` + html;
+        }
+        
+        modalContent.innerHTML = html;
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+}
+
 // Mostrar modal con lista de personas
 function showListModal(status) {
     const modal = document.getElementById('listModal');
@@ -1305,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listeners para las tarjetas de estadísticas
     document.getElementById('statOk').addEventListener('click', () => showListModal('ok'));
     document.getElementById('statPending').addEventListener('click', () => showListModal('pending'));
+    document.getElementById('statEstudios').addEventListener('click', () => showEstudiosModal());
     
     // Event listener para cerrar el modal
     document.getElementById('listModalClose').addEventListener('click', hideListModal);
