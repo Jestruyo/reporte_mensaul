@@ -1278,7 +1278,7 @@ function showEstudiosModal() {
     const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
     const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
     
-    let titulo = `📚 Estudios del ${grupoTexto}${predicoTexto}`;
+    let titulo = `📚 Estudios de ${grupoTexto}${predicoTexto}`;
     if (filterMes !== 'all') {
         titulo += ` en ${mesNombre}`;
     }
