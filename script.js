@@ -402,8 +402,8 @@ const LOCAL_TEST_DATA = {
             }, {
                 "v": "Sarah Trujillo"
             }, {
-                "v": 3.0,
-                "f": "3"
+                "v": 2.0,
+                "f": "2"
             }, {
                 "v": "Si - Predique"
             }, null, null, null, null, {
@@ -1244,12 +1244,17 @@ function getEstudiosByGrupo() {
             return sum + (item.estudios || 0);
         }, 0);
         
+        // Contar solo las personas que reportaron estudios (estudios > 0)
+        const cantidadPersonasConEstudios = datosDelGrupo.filter(item => {
+            return (item.estudios || 0) > 0;
+        }).length;
+        
         // Mostrar grupo si tiene estudios, o si hay un filtro específico de grupo (para mostrar 0)
         if (totalEstudiosGrupo > 0 || (filterGrupo !== 'all' && grupoNum === grupoId)) {
             estudiosPorGrupo[grupoId] = {
                 grupo: grupoId,
                 total: totalEstudiosGrupo,
-                cantidad: datosDelGrupo.length
+                cantidad: cantidadPersonasConEstudios
             };
         }
     });
