@@ -1749,6 +1749,283 @@ function hideListModal() {
 }
 
 // ============================================
+// FUNCIONES DE EXPORTACIÓN
+// ============================================
+
+// Función para generar el HTML de la plantilla de exportación
+function generateExportTemplate() {
+    const filterMes = document.getElementById('filterMes').value;
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterPredico = document.getElementById('filterPredico').value;
+    
+    // Obtener información de filtros
+    const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
+    const grupoTexto = filterGrupo === 'all' ? 'Todos los grupos' : `Grupo ${filterGrupo}`;
+    const predicoTexto = filterPredico === 'all' ? 'Todos' : (filterPredico === 'Si prediqué' ? 'Sí predicó' : 'No predicó');
+    
+    // Obtener estadísticas actuales
+    const totalPersonas = document.getElementById('totalPersonas').textContent;
+    const totalHoras = document.getElementById('totalHoras').textContent;
+    const totalRevisitas = document.getElementById('totalRevisitas').textContent;
+    const totalEstudios = document.getElementById('totalEstudios').textContent;
+    const totalOk = document.getElementById('totalOk').textContent;
+    const totalPending = document.getElementById('totalPending').textContent;
+    
+    // Generar tabla de datos
+    let tableHTML = '<table class="export-data-table">';
+    tableHTML += '<thead><tr>';
+    tableHTML += '<th>Nombre</th>';
+    tableHTML += '<th>Grupo</th>';
+    tableHTML += '<th>Predicó</th>';
+    tableHTML += '<th>Horas</th>';
+    tableHTML += '<th>Revisitas</th>';
+    tableHTML += '<th>Estudios</th>';
+    tableHTML += '<th>Publicaciones</th>';
+    tableHTML += '</tr></thead><tbody>';
+    
+    // Ordenar datos alfabéticamente
+    const sortedData = [...filteredData].sort((a, b) => {
+        const nameA = normalizeName(a.nombre || '');
+        const nameB = normalizeName(b.nombre || '');
+        return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+    });
+    
+    sortedData.forEach(item => {
+        // Marcar en rojo si no predicó
+        const noPredico = item.predico === 'No prediqué';
+        const rowStyle = noPredico ? 'style="background-color: #fee2e2; color: #991b1b; font-weight: 600;"' : '';
+        
+        tableHTML += `<tr ${rowStyle}>`;
+        tableHTML += `<td>${item.nombre || '-'}</td>`;
+        tableHTML += `<td>${item.grupo || '-'}</td>`;
+        tableHTML += `<td ${noPredico ? 'style="color: #dc2626; font-weight: bold;"' : ''}>${item.predico || '-'}</td>`;
+        tableHTML += `<td>${item.horas || 0}</td>`;
+        tableHTML += `<td>${item.revisitas || 0}</td>`;
+        tableHTML += `<td>${item.estudios || 0}</td>`;
+        tableHTML += `<td>${item.publicaciones || 0}</td>`;
+        tableHTML += '</tr>';
+    });
+    
+    tableHTML += '</tbody></table>';
+    
+    // Generar fecha de exportación
+    const fechaExportacion = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    // Construir HTML completo
+    const html = `
+        <div class="export-header">
+            <h1>📊 Reporte Mensual de Servicio</h1>
+            <p class="subtitle">Congregación Cordialidad</p>
+        </div>
+        
+        <div class="export-filters">
+            <strong>Filtros aplicados:</strong><br>
+            <strong>Mes:</strong> ${mesNombre} | 
+            <strong>Grupo:</strong> ${grupoTexto} | 
+            <strong>Predicación:</strong> ${predicoTexto}
+        </div>
+        
+        <div class="export-stats">
+            <div class="export-stat-item">
+                <div class="export-stat-value">${totalPersonas}</div>
+                <div class="export-stat-label">Total Personas</div>
+            </div>
+            <div class="export-stat-item">
+                <div class="export-stat-value">${totalHoras}</div>
+                <div class="export-stat-label">Total Horas</div>
+            </div>
+            <div class="export-stat-item">
+                <div class="export-stat-value">${totalRevisitas}</div>
+                <div class="export-stat-label">Total Revisitas</div>
+            </div>
+            <div class="export-stat-item">
+                <div class="export-stat-value">${totalEstudios}</div>
+                <div class="export-stat-label">Total Estudios</div>
+            </div>
+            <div class="export-stat-item">
+                <div class="export-stat-value">${totalOk}</div>
+                <div class="export-stat-label">Personas OK</div>
+            </div>
+            <div class="export-stat-item">
+                <div class="export-stat-value">${totalPending}</div>
+                <div class="export-stat-label">Pendientes</div>
+            </div>
+        </div>
+        
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #2563eb; font-size: 1.5em;">Detalle de Reportes</h2>
+        ${tableHTML}
+        
+        <div class="export-footer">
+            Generado el ${fechaExportacion}<br>
+            Total de registros: ${filteredData.length}
+        </div>
+    `;
+    
+    return html;
+}
+
+// Función para exportar a PNG
+async function exportToPNG() {
+    try {
+        const template = document.getElementById('exportTemplate');
+        const exportContent = document.getElementById('exportContent');
+        
+        // Generar contenido
+        exportContent.innerHTML = generateExportTemplate();
+        
+        // Mostrar temporalmente
+        template.style.display = 'block';
+        
+        // Usar html2canvas para generar la imagen
+        const canvas = await html2canvas(template, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            logging: false
+        });
+        
+        // Ocultar template
+        template.style.display = 'none';
+        
+        // Descargar imagen
+        const imgData = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        
+        const filterMes = document.getElementById('filterMes').value;
+        const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos';
+        const fecha = new Date().toISOString().split('T')[0];
+        
+        link.download = `Reporte_${mesNombre}_${fecha}.png`;
+        link.href = imgData;
+        link.click();
+    } catch (error) {
+        console.error('Error al exportar a PNG:', error);
+        alert('Error al exportar a PNG. Por favor, intenta de nuevo.');
+    }
+}
+
+// Función para exportar a PDF
+async function exportToPDF() {
+    try {
+        const template = document.getElementById('exportTemplate');
+        const exportContent = document.getElementById('exportContent');
+        
+        // Generar contenido
+        exportContent.innerHTML = generateExportTemplate();
+        
+        // Mostrar temporalmente
+        template.style.display = 'block';
+        
+        // Esperar un poco para que se renderice el contenido
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Usar html2canvas para generar la imagen
+        const canvas = await html2canvas(template, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            logging: false,
+            windowWidth: template.scrollWidth,
+            windowHeight: template.scrollHeight
+        });
+        
+        // Ocultar template
+        template.style.display = 'none';
+        
+        // Convertir canvas a imagen
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Usar jsPDF para crear PDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        
+        // Calcular dimensiones para que quepa en una página A4
+        const ratio = (pdfWidth - 20) / imgWidth;
+        const imgHeightInMM = imgHeight * ratio;
+        
+        let position = 10; // Posición inicial en mm
+        
+        // Si la imagen es más alta que una página, dividirla en múltiples páginas
+        if (imgHeightInMM > pdfHeight - 20) {
+            const pageHeight = pdfHeight - 20;
+            let heightLeft = imgHeightInMM;
+            let sourceY = 0;
+            
+            while (heightLeft > 0) {
+                const sourceHeightPx = Math.min((pageHeight / ratio), imgHeight - sourceY);
+                
+                // Crear un canvas temporal para cada porción de la imagen
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = imgWidth;
+                tempCanvas.height = sourceHeightPx;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                tempCtx.drawImage(canvas, 0, sourceY, imgWidth, sourceHeightPx, 0, 0, imgWidth, sourceHeightPx);
+                
+                const tempImgData = tempCanvas.toDataURL('image/png');
+                
+                pdf.addImage(
+                    tempImgData,
+                    'PNG',
+                    10,
+                    10,
+                    imgWidth * ratio,
+                    sourceHeightPx * ratio
+                );
+                
+                sourceY += sourceHeightPx;
+                heightLeft -= pageHeight;
+                
+                if (heightLeft > 0) {
+                    pdf.addPage();
+                }
+            }
+        } else {
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth * ratio, imgHeightInMM);
+        }
+        
+        // Descargar PDF
+        const filterMes = document.getElementById('filterMes').value;
+        const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos';
+        const fecha = new Date().toISOString().split('T')[0];
+        
+        pdf.save(`Reporte_${mesNombre}_${fecha}.pdf`);
+    } catch (error) {
+        console.error('Error al exportar a PDF:', error);
+        alert('Error al exportar a PDF. Por favor, intenta de nuevo.');
+    }
+}
+
+// Función para mostrar menú de exportación
+function showExportMenu() {
+    const modal = document.getElementById('exportModal');
+    modal.classList.remove('hidden');
+    // Prevenir scroll del body en móviles
+    if (window.innerWidth <= 480) {
+        document.body.classList.add('modal-open');
+    }
+}
+
+// Función para ocultar modal de exportación
+function hideExportModal() {
+    const modal = document.getElementById('exportModal');
+    modal.classList.add('hidden');
+    // Restaurar scroll del body en móviles
+    document.body.classList.remove('modal-open');
+}
+
+// ============================================
 // EVENT LISTENERS PRINCIPALES
 // ============================================
 
@@ -1762,6 +2039,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Event listeners principales
     document.getElementById('btnRefresh').addEventListener('click', fetchData);
+    document.getElementById('btnExport').addEventListener('click', showExportMenu);
     document.getElementById('filterMes').addEventListener('change', applyFilters);
     document.getElementById('filterGrupo').addEventListener('change', applyFilters);
     document.getElementById('filterPredico').addEventListener('change', applyFilters);
@@ -1780,6 +2058,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('listModal').addEventListener('click', (e) => {
         if (e.target.id === 'listModal') {
             hideListModal();
+        }
+    });
+    
+    // Event listeners para modal de exportación
+    document.getElementById('exportModalClose').addEventListener('click', hideExportModal);
+    document.getElementById('exportPDF').addEventListener('click', () => {
+        hideExportModal();
+        exportToPDF();
+    });
+    document.getElementById('exportPNG').addEventListener('click', () => {
+        hideExportModal();
+        exportToPNG();
+    });
+    
+    // Cerrar modal de exportación al hacer clic fuera del contenido
+    document.getElementById('exportModal').addEventListener('click', (e) => {
+        if (e.target.id === 'exportModal') {
+            hideExportModal();
         }
     });
 });

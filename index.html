@@ -8,6 +8,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Reporte Mensual de Servicio</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Librerías para exportar a PDF/PNG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <!-- Modal de Autenticación -->
@@ -38,7 +41,10 @@
         <header>
             <h1>📊 Reporte Mensual de Servicio</h1>
             <p class="subtitle">Congregación Cordialidad</p>
-            <button id="btnRefresh" class="btn-refresh">🔄 Actualizar Datos</button>
+            <div class="header-buttons">
+                <button id="btnRefresh" class="btn-refresh">🔄 Actualizar Datos</button>
+                <button id="btnExport" class="btn-export">📥 Exportar</button>
+            </div>
         </header>
 
         <div class="stats-container">
@@ -77,6 +83,27 @@
                 </div>
                 <div class="list-modal-body">
                     <div id="listModalContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para seleccionar formato de exportación -->
+        <div id="exportModal" class="list-modal hidden">
+            <div class="list-modal-content" style="max-width: 400px;">
+                <div class="list-modal-header">
+                    <h2>📥 Exportar Reporte</h2>
+                    <button class="list-modal-close" id="exportModalClose">&times;</button>
+                </div>
+                <div class="list-modal-body" style="padding: 30px;">
+                    <p style="text-align: center; margin-bottom: 25px; color: #666;">Selecciona el formato de exportación:</p>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <button id="exportPDF" class="btn-export" style="width: 100%; padding: 15px; font-size: 1.1em;">
+                            📄 Exportar como PDF
+                        </button>
+                        <button id="exportPNG" class="btn-export" style="width: 100%; padding: 15px; font-size: 1.1em; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                            🖼️ Exportar como PNG
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,6 +147,11 @@
         </div>
 
         <div id="contenedor" class="grid"></div>
+    </div>
+
+    <!-- Plantilla oculta para exportar -->
+    <div id="exportTemplate" style="display: none; position: absolute; left: -9999px; width: 800px; background: white; padding: 40px; font-family: Arial, sans-serif;">
+        <div id="exportContent"></div>
     </div>
 
     <script src="script.js"></script>
