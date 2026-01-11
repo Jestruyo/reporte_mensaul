@@ -1262,6 +1262,102 @@ function getEstudiosByGrupo() {
     return estudiosPorGrupo;
 }
 
+// Función para obtener revisitas agrupadas por grupo según los filtros aplicados
+function getRevisitasByGrupo() {
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
+    const filterPredico = document.getElementById('filterPredico').value;
+    const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
+    
+    // Objeto para almacenar revisitas por grupo
+    const revisitasPorGrupo = {};
+    
+    // Determinar qué grupos procesar
+    const gruposAProcesar = grupoNum && GRUPOS_LISTAS[grupoNum] 
+        ? [grupoNum] 
+        : Object.keys(GRUPOS_LISTAS).map(k => parseInt(k));
+    
+    gruposAProcesar.forEach(grupoId => {
+        // Filtrar datos del grupo aplicando todos los filtros
+        const datosDelGrupo = allData.filter(item => {
+            const matchGrupo = parseInt(item.grupo) === grupoId;
+            const matchMes = matchMonthFilter(item, filterMes);
+            const matchPredico = filterPredico === 'all' || item.predico === filterPredico;
+            
+            return matchGrupo && matchMes && matchPredico;
+        });
+        
+        // Sumar revisitas del grupo
+        const totalRevisitasGrupo = datosDelGrupo.reduce((sum, item) => {
+            return sum + (item.revisitas || 0);
+        }, 0);
+        
+        // Contar solo las personas que reportaron revisitas (revisitas > 0)
+        const cantidadPersonasConRevisitas = datosDelGrupo.filter(item => {
+            return (item.revisitas || 0) > 0;
+        }).length;
+        
+        // Mostrar grupo si tiene revisitas, o si hay un filtro específico de grupo (para mostrar 0)
+        if (totalRevisitasGrupo > 0 || (filterGrupo !== 'all' && grupoNum === grupoId)) {
+            revisitasPorGrupo[grupoId] = {
+                grupo: grupoId,
+                total: totalRevisitasGrupo,
+                cantidad: cantidadPersonasConRevisitas
+            };
+        }
+    });
+    
+    return revisitasPorGrupo;
+}
+
+// Función para obtener horas agrupadas por grupo según los filtros aplicados
+function getHorasByGrupo() {
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
+    const filterPredico = document.getElementById('filterPredico').value;
+    const grupoNum = filterGrupo === 'all' ? null : parseInt(filterGrupo);
+    
+    // Objeto para almacenar horas por grupo
+    const horasPorGrupo = {};
+    
+    // Determinar qué grupos procesar
+    const gruposAProcesar = grupoNum && GRUPOS_LISTAS[grupoNum] 
+        ? [grupoNum] 
+        : Object.keys(GRUPOS_LISTAS).map(k => parseInt(k));
+    
+    gruposAProcesar.forEach(grupoId => {
+        // Filtrar datos del grupo aplicando todos los filtros
+        const datosDelGrupo = allData.filter(item => {
+            const matchGrupo = parseInt(item.grupo) === grupoId;
+            const matchMes = matchMonthFilter(item, filterMes);
+            const matchPredico = filterPredico === 'all' || item.predico === filterPredico;
+            
+            return matchGrupo && matchMes && matchPredico;
+        });
+        
+        // Sumar horas del grupo
+        const totalHorasGrupo = datosDelGrupo.reduce((sum, item) => {
+            return sum + (item.horas || 0);
+        }, 0);
+        
+        // Contar solo las personas que reportaron horas (horas > 0)
+        const cantidadPersonasConHoras = datosDelGrupo.filter(item => {
+            return (item.horas || 0) > 0;
+        }).length;
+        
+        // Mostrar grupo si tiene horas, o si hay un filtro específico de grupo (para mostrar 0)
+        if (totalHorasGrupo > 0 || (filterGrupo !== 'all' && grupoNum === grupoId)) {
+            horasPorGrupo[grupoId] = {
+                grupo: grupoId,
+                total: totalHorasGrupo,
+                cantidad: cantidadPersonasConHoras
+            };
+        }
+    });
+    
+    return horasPorGrupo;
+}
+
 // Función para mostrar modal con estudios por grupo
 function showEstudiosModal() {
     const modal = document.getElementById('listModal');
@@ -1278,7 +1374,7 @@ function showEstudiosModal() {
     const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
     const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
     
-    let titulo = `📚 Estudios de ${grupoTexto}${predicoTexto}`;
+    let titulo = `📚 Estudios  ${grupoTexto}${predicoTexto}`;
     if (filterMes !== 'all') {
         titulo += ` en ${mesNombre}`;
     }
@@ -1314,6 +1410,130 @@ function showEstudiosModal() {
             html = `<div class="person-list-group" style="background: #f0f7ff; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
                 <div class="person-list-group-title" style="font-size: 1.2em; margin-bottom: 10px;">Total General</div>
                 <div style="font-size: 1.5em; color: #2563eb; font-weight: bold; text-align: center;">${totalGeneral} Estudios</div>
+            </div>` + html;
+        }
+        
+        modalContent.innerHTML = html;
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+}
+
+// Función para mostrar modal con revisitas por grupo
+function showRevisitasModal() {
+    const modal = document.getElementById('listModal');
+    const modalTitle = document.getElementById('listModalTitle');
+    const modalContent = document.getElementById('listModalContent');
+    
+    const revisitasPorGrupo = getRevisitasByGrupo();
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
+    const filterPredico = document.getElementById('filterPredico').value;
+    
+    // Configurar título con información del mes y grupo
+    const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
+    const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
+    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
+    
+    let titulo = `🔄 Revisitas  ${grupoTexto}${predicoTexto}`;
+    if (filterMes !== 'all') {
+        titulo += ` en ${mesNombre}`;
+    }
+    
+    modalTitle.textContent = titulo;
+    
+    // Generar contenido
+    const gruposArray = Object.keys(revisitasPorGrupo).map(k => revisitasPorGrupo[k]);
+    
+    if (gruposArray.length === 0) {
+        modalContent.innerHTML = '<div class="person-list-item empty">No hay revisitas registradas con los filtros seleccionados</div>';
+    } else {
+        // Ordenar por grupo
+        gruposArray.sort((a, b) => a.grupo - b.grupo);
+        
+        let html = '';
+        gruposArray.forEach(item => {
+            html += `<div class="person-list-group">
+                <div class="person-list-group-title">Grupo ${item.grupo}</div>
+                <div class="person-list-item" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span><strong>Total de Revisitas:</strong></span>
+                    <span style="font-size: 1.2em; color: #2563eb; font-weight: bold;">${item.total}</span>
+                </div>
+                <div class="person-list-item" style="font-size: 0.9em; color: #666; padding-top: 5px;">
+                    ${item.cantidad} ${item.cantidad === 1 ? 'persona reportó' : 'personas reportaron'}
+                </div>
+            </div>`;
+        });
+        
+        // Agregar total general si hay múltiples grupos
+        if (filterGrupo === 'all' && gruposArray.length > 1) {
+            const totalGeneral = gruposArray.reduce((sum, item) => sum + item.total, 0);
+            html = `<div class="person-list-group" style="background: #f0f7ff; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <div class="person-list-group-title" style="font-size: 1.2em; margin-bottom: 10px;">Total General</div>
+                <div style="font-size: 1.5em; color: #2563eb; font-weight: bold; text-align: center;">${totalGeneral} Revisitas</div>
+            </div>` + html;
+        }
+        
+        modalContent.innerHTML = html;
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+}
+
+// Función para mostrar modal con horas por grupo
+function showHorasModal() {
+    const modal = document.getElementById('listModal');
+    const modalTitle = document.getElementById('listModalTitle');
+    const modalContent = document.getElementById('listModalContent');
+    
+    const horasPorGrupo = getHorasByGrupo();
+    const filterGrupo = document.getElementById('filterGrupo').value;
+    const filterMes = document.getElementById('filterMes').value;
+    const filterPredico = document.getElementById('filterPredico').value;
+    
+    // Configurar título con información del mes y grupo
+    const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
+    const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
+    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
+    
+    let titulo = `⏰ Horas  ${grupoTexto}${predicoTexto}`;
+    if (filterMes !== 'all') {
+        titulo += ` en ${mesNombre}`;
+    }
+    
+    modalTitle.textContent = titulo;
+    
+    // Generar contenido
+    const gruposArray = Object.keys(horasPorGrupo).map(k => horasPorGrupo[k]);
+    
+    if (gruposArray.length === 0) {
+        modalContent.innerHTML = '<div class="person-list-item empty">No hay horas registradas con los filtros seleccionados</div>';
+    } else {
+        // Ordenar por grupo
+        gruposArray.sort((a, b) => a.grupo - b.grupo);
+        
+        let html = '';
+        gruposArray.forEach(item => {
+            html += `<div class="person-list-group">
+                <div class="person-list-group-title">Grupo ${item.grupo}</div>
+                <div class="person-list-item" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span><strong>Total de Horas:</strong></span>
+                    <span style="font-size: 1.2em; color: #2563eb; font-weight: bold;">${item.total}</span>
+                </div>
+                <div class="person-list-item" style="font-size: 0.9em; color: #666; padding-top: 5px;">
+                    ${item.cantidad} ${item.cantidad === 1 ? 'persona reportó' : 'personas reportaron'}
+                </div>
+            </div>`;
+        });
+        
+        // Agregar total general si hay múltiples grupos
+        if (filterGrupo === 'all' && gruposArray.length > 1) {
+            const totalGeneral = gruposArray.reduce((sum, item) => sum + item.total, 0);
+            html = `<div class="person-list-group" style="background: #f0f7ff; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <div class="person-list-group-title" style="font-size: 1.2em; margin-bottom: 10px;">Total General</div>
+                <div style="font-size: 1.5em; color: #2563eb; font-weight: bold; text-align: center;">${totalGeneral} Horas</div>
             </div>` + html;
         }
         
@@ -1419,6 +1639,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('statOk').addEventListener('click', () => showListModal('ok'));
     document.getElementById('statPending').addEventListener('click', () => showListModal('pending'));
     document.getElementById('statEstudios').addEventListener('click', () => showEstudiosModal());
+    document.getElementById('statRevisitas').addEventListener('click', () => showRevisitasModal());
+    document.getElementById('statHoras').addEventListener('click', () => showHorasModal());
     
     // Event listener para cerrar el modal
     document.getElementById('listModalClose').addEventListener('click', hideListModal);
