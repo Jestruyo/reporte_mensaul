@@ -203,6 +203,7 @@ header h1 {
     bottom: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height para móviles */
     margin: 0;
     padding: 0;
     background-color: rgba(0, 0, 0, 0.5);
@@ -211,6 +212,8 @@ header h1 {
     justify-content: center;
     animation: fadeIn 0.3s ease;
     box-sizing: border-box;
+    overflow: hidden;
+    touch-action: none;
 }
 
 .list-modal.hidden {
@@ -223,11 +226,14 @@ header h1 {
     max-width: 600px;
     width: 90%;
     max-height: 80vh;
+    max-height: 80dvh; /* Dynamic viewport height para móviles */
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: slideDown 0.3s ease;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    position: relative;
+    touch-action: pan-y;
 }
 
 .list-modal-header {
@@ -248,10 +254,18 @@ header h1 {
 }
 
 @media (max-width: 768px) {
+    .list-modal {
+        align-items: flex-end;
+        padding-bottom: 0;
+    }
+    
     .list-modal-content {
         width: 95%;
         max-height: 85vh;
-        border-radius: 15px;
+        max-height: 85dvh;
+        border-radius: 15px 15px 0 0;
+        animation: slideUp 0.3s ease;
+        margin-bottom: 0;
     }
     
     .list-modal-header {
@@ -264,21 +278,50 @@ header h1 {
 }
 
 @media (max-width: 480px) {
+    .list-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+    
     .list-modal-content {
         width: 100%;
-        max-height: 90vh;
+        max-width: 100%;
+        max-height: 92vh;
+        max-height: 92dvh;
         border-radius: 0;
-        border-top-left-radius: 15px;
-        border-top-right-radius: 15px;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin: 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
     }
     
     .list-modal-header {
-        padding: 15px;
+        padding: 16px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
     }
     
     .list-modal-header h2 {
-        font-size: 1.1em;
+        font-size: 1em;
         padding-right: 8px;
+        line-height: 1.4;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
 }
 
@@ -312,14 +355,31 @@ header h1 {
         width: 44px;
         height: 44px;
         font-size: 1.8em;
+        margin-left: 4px;
+    }
+    
+    .list-modal-close:active {
+        background: #e0e0e0;
+        transform: scale(0.95);
     }
 }
 
 .list-modal-body {
     padding: 20px 30px;
     overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    min-height: 0; /* Permite que el flex funcione correctamente */
+}
+
+@media (max-width: 480px) {
+    .list-modal-body {
+        padding-bottom: env(safe-area-inset-bottom, 15px);
+        padding-left: 15px;
+        padding-right: 15px;
+    }
 }
 
 .person-list-item {
@@ -387,6 +447,31 @@ header h1 {
     border-bottom: 2px solid #e0e0e0;
 }
 
+@media (max-width: 768px) {
+    .person-list-group {
+        margin-bottom: 16px;
+    }
+    
+    .person-list-group-title {
+        font-size: 1em;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .person-list-group {
+        margin-bottom: 14px;
+    }
+    
+    .person-list-group-title {
+        font-size: 0.95em;
+        margin-bottom: 6px;
+        padding-bottom: 5px;
+        border-bottom-width: 1px;
+    }
+}
+
 /* Estilos específicos para el modal de estudios */
 .person-list-item strong {
     color: #333;
@@ -396,11 +481,17 @@ header h1 {
     .person-list-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 5px;
+        gap: 6px;
+        line-height: 1.5;
     }
     
     .person-list-item span:last-child {
         align-self: flex-end;
+        font-size: 1.1em;
+    }
+    
+    .person-list-item strong {
+        font-size: 0.95em;
     }
 }
 
@@ -778,6 +869,7 @@ header h1 {
     bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
+    height: 100dvh !important; /* Dynamic viewport height para móviles */
     margin: 0 !important;
     padding: 0 !important;
     background-color: white;
@@ -785,6 +877,7 @@ header h1 {
     justify-content: center;
     animation: fadeIn 0.3s ease;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .auth-modal.hidden {
@@ -807,7 +900,9 @@ header h1 {
     max-width: 400px;
     width: 90%;
     max-height: 90vh;
+    max-height: 90dvh; /* Dynamic viewport height para móviles */
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: slideDown 0.3s ease;
     text-align: center;
@@ -815,21 +910,31 @@ header h1 {
     position: relative;
     box-sizing: border-box;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
 }
 
 @media (max-width: 768px) {
     .auth-modal-content {
         padding: 30px 25px;
         width: 95%;
+        max-width: 95%;
         border-radius: 15px;
+        max-height: 85vh;
+        max-height: 85dvh;
     }
 }
 
 @media (max-width: 480px) {
     .auth-modal-content {
-        padding: 25px 20px;
-        width: 95%;
-        border-radius: 12px;
+        padding: 24px 20px;
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        max-height: 100vh;
+        max-height: 100dvh;
+        box-shadow: none;
     }
 }
 
@@ -841,6 +946,36 @@ header h1 {
     to {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+/* Prevenir scroll del body cuando el modal está abierto en móviles */
+@media (max-width: 480px) {
+    body.modal-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+/* Mejoras adicionales para contenido largo en modales móviles */
+@media (max-width: 480px) {
+    .list-modal-body::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .list-modal-body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .list-modal-body::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+    }
+    
+    .list-modal-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
     }
 }
 

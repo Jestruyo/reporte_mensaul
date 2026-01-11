@@ -75,7 +75,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 42.0,
                 "f": "42"
@@ -98,7 +98,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 15.0,
                 "f": "15"
@@ -118,7 +118,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 10.0,
                 "f": "10"
@@ -135,7 +135,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 7.0,
                 "f": "7"
@@ -161,7 +161,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 30.0,
                 "f": "30"
@@ -187,7 +187,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, {
                 "v": 1.0,
                 "f": "1"
@@ -204,7 +204,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 23.0,
                 "f": "23"
@@ -230,7 +230,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -244,7 +244,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 48.0,
                 "f": "48"
@@ -270,7 +270,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 16.0,
                 "f": "16"
@@ -290,7 +290,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 57.0,
                 "f": "57"
@@ -310,7 +310,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 50.0,
                 "f": "50"
@@ -327,7 +327,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 59.0,
                 "f": "59"
@@ -347,7 +347,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -361,7 +361,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, {
                 "v": 29.0,
                 "f": "29"
@@ -378,7 +378,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -392,7 +392,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -406,7 +406,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -420,7 +420,7 @@ const LOCAL_TEST_DATA = {
                 "v": 2.0,
                 "f": "2"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -434,7 +434,7 @@ const LOCAL_TEST_DATA = {
                 "v": 2.0,
                 "f": "2"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -448,7 +448,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, {
                 "v": 1.0,
                 "f": "1"
@@ -465,7 +465,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -479,7 +479,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -493,7 +493,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "Si - Predique"
+                "v": "Si prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -507,7 +507,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "No - Predique"
+                "v": "No prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -521,7 +521,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "No - Predique"
+                "v": "No prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -535,7 +535,7 @@ const LOCAL_TEST_DATA = {
                 "v": 3.0,
                 "f": "3"
             }, {
-                "v": "No - Predique"
+                "v": "No prediqué"
             }, null, null, null, null, {
                 "v": null
             }]
@@ -1018,7 +1018,7 @@ function displayData() {
         const card = document.createElement('div');
         card.className = 'card';
         
-        const predicoClass = item.predico === 'Si - Predique' ? 'yes' : 'no';
+        const predicoClass = item.predico === 'Si prediqué' ? 'yes' : 'no';
         
         card.innerHTML = `
             <div class="card-header">
@@ -1485,7 +1485,7 @@ function showEstudiosModal() {
     // Configurar título con información del mes y grupo
     const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
     const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
-    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
+    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si prediqué' ? ' que predicaron' : ' que no predicaron');
     
     let titulo = `📚 Estudios  ${grupoTexto}${predicoTexto}`;
     if (filterMes !== 'all') {
@@ -1531,6 +1531,10 @@ function showEstudiosModal() {
     
     // Mostrar modal
     modal.classList.remove('hidden');
+    // Prevenir scroll del body en móviles
+    if (window.innerWidth <= 480) {
+        document.body.classList.add('modal-open');
+    }
 }
 
 // Función para mostrar modal con revisitas por grupo
@@ -1547,7 +1551,7 @@ function showRevisitasModal() {
     // Configurar título con información del mes y grupo
     const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
     const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
-    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
+    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si prediqué' ? ' que predicaron' : ' que no predicaron');
     
     let titulo = `🔄 Revisitas  ${grupoTexto}${predicoTexto}`;
     if (filterMes !== 'all') {
@@ -1593,6 +1597,10 @@ function showRevisitasModal() {
     
     // Mostrar modal
     modal.classList.remove('hidden');
+    // Prevenir scroll del body en móviles
+    if (window.innerWidth <= 480) {
+        document.body.classList.add('modal-open');
+    }
 }
 
 // Función para mostrar modal con horas por grupo
@@ -1609,7 +1617,7 @@ function showHorasModal() {
     // Configurar título con información del mes y grupo
     const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos los meses';
     const grupoTexto = filterGrupo === 'all' ? 'todos los grupos' : `Grupo ${filterGrupo}`;
-    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si - Predique' ? ' que predicaron' : ' que no predicaron');
+    const predicoTexto = filterPredico === 'all' ? '' : (filterPredico === 'Si prediqué' ? ' que predicaron' : ' que no predicaron');
     
     let titulo = `⏰ Horas  ${grupoTexto}${predicoTexto}`;
     if (filterMes !== 'all') {
@@ -1655,6 +1663,10 @@ function showHorasModal() {
     
     // Mostrar modal
     modal.classList.remove('hidden');
+    // Prevenir scroll del body en móviles
+    if (window.innerWidth <= 480) {
+        document.body.classList.add('modal-open');
+    }
 }
 
 // Mostrar modal con lista de personas
@@ -1722,12 +1734,18 @@ function showListModal(status) {
     
     // Mostrar modal
     modal.classList.remove('hidden');
+    // Prevenir scroll del body en móviles
+    if (window.innerWidth <= 480) {
+        document.body.classList.add('modal-open');
+    }
 }
 
 // Ocultar modal
 function hideListModal() {
     const modal = document.getElementById('listModal');
     modal.classList.add('hidden');
+    // Restaurar scroll del body en móviles
+    document.body.classList.remove('modal-open');
 }
 
 // ============================================
