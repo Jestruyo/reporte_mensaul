@@ -1303,7 +1303,8 @@ header h1 {
 /* ============================================
    PESTAÑAS
    ============================================ */
-.tabs {
+.container .tabs,
+#mainContent .tabs {
     display: flex;
     gap: 0;
     margin-bottom: 20px;
@@ -1313,7 +1314,9 @@ header h1 {
     backdrop-filter: blur(10px);
 }
 
-.tab-btn {
+.container .tab-btn,
+#mainContent .tab-btn,
+.tabs .tab-btn {
     flex: 1;
     padding: 12px 20px;
     border: none;
@@ -1325,23 +1328,33 @@ header h1 {
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-.tab-btn:hover {
+.container .tab-btn:hover,
+#mainContent .tab-btn:hover,
+.tabs .tab-btn:hover {
     background: rgba(255, 255, 255, 0.15);
     color: white;
 }
 
-.tab-btn.active {
+.container .tab-btn.active,
+#mainContent .tab-btn.active,
+.tabs .tab-btn.active {
     background: white;
     color: #2563eb;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+#tabReporte.tab-panel,
+#tabIndividual.tab-panel,
 .tab-panel {
     display: none;
 }
 
+#tabReporte.tab-panel.active,
+#tabIndividual.tab-panel.active,
 .tab-panel.active {
     display: block;
 }

@@ -8,6 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Reporte Mensual de Servicio</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Estilos críticos de pestañas (fallback si styles.css está en caché o no carga) -->
+    <style>
+        .tabs { display: flex; gap: 0; margin-bottom: 20px; background: rgba(255,255,255,0.15); border-radius: 12px; padding: 4px; }
+        .tab-btn { flex: 1; padding: 12px 20px; border: none; border-radius: 10px; background: transparent; color: rgba(255,255,255,0.9); font-size: 1em; font-weight: 600; cursor: pointer; }
+        .tab-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .tab-btn.active { background: #fff; color: #2563eb; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab-panel { display: none !important; }
+        .tab-panel.active { display: block !important; }
+        @media (max-width: 768px) { .tabs { flex-direction: column; } .tab-btn { text-align: center; } }
+    </style>
     <!-- Librerías para exportar a PDF/PNG -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

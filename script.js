@@ -2444,16 +2444,17 @@ function initTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabReporte = document.getElementById('tabReporte');
     const tabIndividual = document.getElementById('tabIndividual');
+    if (!tabReporte || !tabIndividual || tabBtns.length === 0) return;
     tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tab = btn.getAttribute('data-tab');
+        btn.addEventListener('click', function () {
+            const tab = this.getAttribute('data-tab');
             tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            this.classList.add('active');
             if (tab === 'reporte') {
                 tabReporte.classList.add('active');
                 tabIndividual.classList.remove('active');
                 document.body.classList.remove('tab-individual');
-            } else {
+            } else if (tab === 'individual') {
                 tabReporte.classList.remove('active');
                 tabIndividual.classList.add('active');
                 document.body.classList.add('tab-individual');
