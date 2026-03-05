@@ -2264,7 +2264,7 @@ function getDataForPersonInRange(nombreSeleccionado, fechaDesde, fechaHasta) {
     });
 }
 
-// Agregar estadísticas por mes para una persona en un rango
+// Agregar estadísticas por mes para una persona en un rango (solo meses con reportes)
 function getMonthlyStatsForPerson(nombreSeleccionado, fechaDesde, fechaHasta) {
     const from = new Date(fechaDesde);
     const to = new Date(fechaHasta);
@@ -2281,9 +2281,10 @@ function getMonthlyStatsForPerson(nombreSeleccionado, fechaDesde, fechaHasta) {
     const add = (year, month, item) => {
         const key = `${year}-${String(month + 1).padStart(2, '0')}`;
         if (!byMonth[key]) {
-            byMonth[key] = { label: getMonthName(month) + ' ' + year, reporto: 0, horas: 0, revisitas: 0, estudios: 0 };
+            byMonth[key] = { label: getMonthName(month) + ' ' + year, reporto: 0, predico: false, horas: 0, revisitas: 0, estudios: 0 };
         }
         byMonth[key].reporto += 1;
+        if (item.predico === 'Si prediqué') byMonth[key].predico = true;
         byMonth[key].horas += item.horas || 0;
         byMonth[key].revisitas += item.revisitas || 0;
         byMonth[key].estudios += item.estudios || 0;
@@ -2294,6 +2295,21 @@ function getMonthlyStatsForPerson(nombreSeleccionado, fechaDesde, fechaHasta) {
     });
     const keys = Object.keys(byMonth).sort();
     return { data, byMonth: keys.map(k => ({ key: k, ...byMonth[k] })) };
+}
+
+// Todos los meses del rango con estado de predicación: predicó (al menos un "Si prediqué") o no (sin reporte o solo "No prediqué")
+function getAllMonthsWithPredico(nombreSeleccionado, fechaDesde, fechaHasta) {
+    const monthsInRange = getMonthsInRange(fechaDesde, fechaHasta);
+    const monthly = getMonthlyStatsForPerson(nombreSeleccionado, fechaDesde, fechaHasta);
+    const mapByKey = {};
+    monthly.byMonth.forEach(m => { mapByKey[m.key] = m; });
+    return monthsInRange.map(m => {
+        const info = mapByKey[m.key];
+        if (!info) {
+            return { key: m.key, label: m.label, reporto: false, predico: false, horas: 0, revisitas: 0, estudios: 0 };
+        }
+        return { key: m.key, label: m.label, reporto: info.reporto > 0, predico: !!info.predico, horas: info.horas || 0, revisitas: info.revisitas || 0, estudios: info.estudios || 0 };
+    });
 }
 
 // Obtener todos los meses en el rango (para gráfica de cumplimiento: reportó o no)
@@ -2338,6 +2354,14 @@ function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
     const totalPublicaciones = registros.reduce((s, r) => s + (extractNumber(r.publicaciones) || 0), 0);
     const vecesReporto = registros.length;
     const vecesPredico = registros.filter(r => r.predico === 'Si prediqué').length;
+
+    // Todos los meses del rango con estado: predicó (al menos un "Si prediqué") o no
+    const allMonths = getAllMonthsWithPredico(nombreSeleccionado, fechaDesde, fechaHasta);
+    const mesesEnRango = allMonths.length;
+    const mesesQuePredico = allMonths.filter(m => m.predico).length;
+    const mesesNoPredico = allMonths.filter(m => !m.predico).length;
+    const mesesNoPredicoLabels = allMonths.filter(m => !m.predico).map(m => m.label);
+
     const desdeStr = new Date(fechaDesde).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
     const hastaStr = new Date(fechaHasta).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
     titleEl.textContent = nombreSeleccionado + ' — ' + desdeStr + ' a ' + hastaStr;
@@ -2348,13 +2372,19 @@ function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
         <div class="individual-stat-card"><span class="value">${totalEstudios}</span><span class="label">Estudios</span></div>
         <div class="individual-stat-card"><span class="value">${totalPublicaciones}</span><span class="label">Publicaciones</span></div>
         <div class="individual-stat-card"><span class="value">${vecesPredico}</span><span class="label">Veces que predicó</span></div>
+        <div class="individual-stat-card"><span class="value">${mesesEnRango}</span><span class="label">Meses en rango</span></div>
+        <div class="individual-stat-card"><span class="value">${mesesQuePredico}</span><span class="label">Meses que predicó</span></div>
+        <div class="individual-stat-card individual-stat-card-danger"><span class="value">${mesesNoPredico}</span><span class="label">Meses que no predicó</span></div>
     `;
-    const monthsInRange = getMonthsInRange(fechaDesde, fechaHasta);
-    const monthly = getMonthlyStatsForPerson(nombreSeleccionado, fechaDesde, fechaHasta);
-    const reportoPorMes = new Set(monthly.byMonth.map(m => m.key));
-    const labelsCumplimiento = monthsInRange.map(m => m.label);
-    const dataCumplimiento = monthsInRange.map(m => reportoPorMes.has(m.key) ? 1 : 0);
-    const colorsCumplimiento = dataCumplimiento.map(v => v ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.6)');
+    // Gráfica de cumplimiento: predicó (verde) vs no predicó (rojo) por mes
+    const labelsCumplimiento = allMonths.map(m => m.label);
+    const dataCumplimiento = allMonths.map(m => m.predico ? 1 : 0);
+    const colorsCumplimiento = allMonths.map(m => m.predico ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.7)');
+    const tooltipsCumplimiento = allMonths.map(m => {
+        if (m.predico) return 'Predicó';
+        if (m.reporto) return 'No predicó (reportó pero no predicó)';
+        return 'No predicó (no reportó)';
+    });
     if (chartCumplimientoInstance) chartCumplimientoInstance.destroy();
     const ctxCumpl = document.getElementById('chartCumplimiento');
     if (ctxCumpl) {
@@ -2363,10 +2393,10 @@ function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
             data: {
                 labels: labelsCumplimiento,
                 datasets: [{
-                    label: 'Reportó (Sí / No)',
+                    label: 'Predicó',
                     data: dataCumplimiento,
                     backgroundColor: colorsCumplimiento,
-                    borderColor: dataCumplimiento.map(v => v ? '#16a34a' : '#dc2626'),
+                    borderColor: allMonths.map(m => m.predico ? '#16a34a' : '#dc2626'),
                     borderWidth: 1
                 }]
             },
@@ -2378,7 +2408,7 @@ function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
                     tooltip: {
                         callbacks: {
                             label: function(ctx) {
-                                return ctx.raw === 1 ? 'Reportó' : 'No reportó';
+                                return tooltipsCumplimiento[ctx.dataIndex] || (ctx.raw === 1 ? 'Predicó' : 'No predicó');
                             }
                         }
                     }
@@ -2387,13 +2417,14 @@ function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
                     y: {
                         min: 0,
                         max: 1,
-                        ticks: { stepSize: 1, callback: v => v === 1 ? 'Sí' : 'No' }
+                        ticks: { stepSize: 1, callback: v => v === 1 ? 'Sí predicó' : 'No predicó' }
                     }
                 }
             }
         });
     }
-    const labelsValores = monthly.byMonth.map(m => m.label);
+    // Gráfica de valores: todos los meses del rango (0 si no reportó)
+    const labelsValores = allMonths.map(m => m.label);
     if (chartValoresInstance) chartValoresInstance.destroy();
     const ctxVal = document.getElementById('chartValores');
     if (ctxVal) {
@@ -2402,9 +2433,9 @@ function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
             data: {
                 labels: labelsValores,
                 datasets: [
-                    { label: 'Horas', data: monthly.byMonth.map(m => m.horas), backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: '#2563eb', borderWidth: 1 },
-                    { label: 'Revisitas', data: monthly.byMonth.map(m => m.revisitas), backgroundColor: 'rgba(168, 85, 247, 0.7)', borderColor: '#7c3aed', borderWidth: 1 },
-                    { label: 'Estudios', data: monthly.byMonth.map(m => m.estudios), backgroundColor: 'rgba(34, 197, 94, 0.7)', borderColor: '#16a34a', borderWidth: 1 }
+                    { label: 'Horas', data: allMonths.map(m => m.horas), backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: '#2563eb', borderWidth: 1 },
+                    { label: 'Revisitas', data: allMonths.map(m => m.revisitas), backgroundColor: 'rgba(168, 85, 247, 0.7)', borderColor: '#7c3aed', borderWidth: 1 },
+                    { label: 'Estudios', data: allMonths.map(m => m.estudios), backgroundColor: 'rgba(34, 197, 94, 0.7)', borderColor: '#16a34a', borderWidth: 1 }
                 ]
             },
             options: {
@@ -2417,12 +2448,18 @@ function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
             }
         });
     }
-    let tableHtml = '<h4>Detalle de reportes</h4><table><thead><tr><th>Fecha</th><th>Predicó</th><th>Horas</th><th>Revisitas</th><th>Estudios</th><th>Publicaciones</th></tr></thead><tbody>';
+    let detailHtml = '';
+    if (mesesNoPredico > 0) {
+        detailHtml += '<p class="individual-meses-no-predico"><strong>Meses que no predicó (' + mesesNoPredico + '):</strong> <span class="meses-lista-roja">' + escapeHtml(mesesNoPredicoLabels.join(', ')) + '</span></p>';
+    }
+    detailHtml += '<h4>Detalle de reportes</h4><table><thead><tr><th>Fecha</th><th>Predicó</th><th>Horas</th><th>Revisitas</th><th>Estudios</th><th>Publicaciones</th></tr></thead><tbody>';
+    let tableHtml = detailHtml;
     registros.sort((a, b) => (a.timestamp && b.timestamp) ? (new Date(a.timestamp) - new Date(b.timestamp)) : 0).forEach(r => {
         const fecha = formatDate(r.timestamp);
         tableHtml += '<tr>';
         tableHtml += '<td>' + escapeHtml(fecha) + '</td>';
-        tableHtml += '<td>' + escapeHtml(r.predico || '-') + '</td>';
+        const noPredico = r.predico === 'No prediqué';
+        tableHtml += '<td' + (noPredico ? ' class="cell-no-predico"' : '') + '>' + escapeHtml(r.predico || '-') + '</td>';
         tableHtml += '<td>' + (r.horas || 0) + '</td>';
         tableHtml += '<td>' + (r.revisitas || 0) + '</td>';
         tableHtml += '<td>' + (r.estudios || 0) + '</td>';
