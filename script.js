@@ -2445,21 +2445,35 @@ function initTabs() {
     const tabReporte = document.getElementById('tabReporte');
     const tabIndividual = document.getElementById('tabIndividual');
     if (!tabReporte || !tabIndividual || tabBtns.length === 0) return;
+
+    function showPanel(panelToShow) {
+        tabReporte.classList.remove('active');
+        tabIndividual.classList.remove('active');
+        tabReporte.style.display = 'none';
+        tabIndividual.style.display = 'none';
+        if (panelToShow === 'reporte') {
+            tabReporte.classList.add('active');
+            tabReporte.style.display = 'block';
+            document.body.classList.remove('tab-individual');
+        } else {
+            tabIndividual.classList.add('active');
+            tabIndividual.style.display = 'block';
+            document.body.classList.add('tab-individual');
+            setDefaultDateRange();
+        }
+    }
+
+    // Estado inicial: mostrar Reporte General
+    tabIndividual.style.display = 'none';
+    tabReporte.style.display = 'block';
+
     tabBtns.forEach(btn => {
         btn.addEventListener('click', function () {
             const tab = this.getAttribute('data-tab');
+            if (!tab) return;
             tabBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            if (tab === 'reporte') {
-                tabReporte.classList.add('active');
-                tabIndividual.classList.remove('active');
-                document.body.classList.remove('tab-individual');
-            } else if (tab === 'individual') {
-                tabReporte.classList.remove('active');
-                tabIndividual.classList.add('active');
-                document.body.classList.add('tab-individual');
-                setDefaultDateRange();
-            }
+            showPanel(tab);
         });
     });
 }
