@@ -9,7 +9,7 @@ const VALIDATION_CODE = '1914';
 
 // CONFIGURACIÓN: Usar datos locales para testing
 // Cambia a true para usar los datos locales en lugar de hacer fetch a Google Sheets
-const USE_LOCAL_DATA = false;  // Cambiar a true para testing local
+const USE_LOCAL_DATA = true;  // Cambiar a true para testing local
 
 // URL para obtener los datos en formato JSON desde Google Sheets
 // Usamos gid en lugar del nombre de la pestaña para mayor confiabilidad
@@ -2974,6 +2974,14 @@ function hideListModal() {
 // FUNCIONES DE EXPORTACIÓN
 // ============================================
 
+// Saber si la pestaña activa es Estadísticas Individual
+function isIndividualTabActive() {
+    return document.body.classList.contains('tab-individual');
+}
+
+// Variable para que PDF/PNG exporten según la pestaña desde la que se abrió el modal
+let currentExportMode = 'general';
+
 // Función para generar el HTML de la plantilla de exportación
 function generateExportTemplate() {
     const filterMes = document.getElementById('filterMes').value;
@@ -3092,14 +3100,52 @@ function generateExportTemplate() {
     return html;
 }
 
+// Generar HTML para exportar estadísticas individual (título, tarjetas, gráficas como imagen, tabla)
+function generateExportTemplateIndividual() {
+    const titleEl = document.getElementById('individualResultsTitle');
+    const cardsEl = document.getElementById('individualStatsCards');
+    const detailEl = document.getElementById('individualDetail');
+    const title = titleEl ? titleEl.textContent : 'Estadísticas individual';
+    const cardsHtml = cardsEl ? cardsEl.innerHTML : '';
+    const detailHtml = detailEl ? detailEl.innerHTML : '';
+    let chartsHtml = '';
+    if (typeof chartCumplimientoInstance !== 'undefined' && chartCumplimientoInstance) {
+        try {
+            chartsHtml += '<p style="margin: 15px 0 5px; font-weight: 600; color: #334155;">Cumplimiento por mes</p><img src="' + chartCumplimientoInstance.toBase64Image() + '" style="max-width: 100%; height: auto; margin-bottom: 20px;" alt="Cumplimiento">';
+        } catch (e) { console.warn('Chart cumplimiento export:', e); }
+    }
+    if (typeof chartValoresInstance !== 'undefined' && chartValoresInstance) {
+        try {
+            chartsHtml += '<p style="margin: 15px 0 5px; font-weight: 600; color: #334155;">Horas, Revisitas y Estudios por mes</p><img src="' + chartValoresInstance.toBase64Image() + '" style="max-width: 100%; height: auto;" alt="Valores">';
+        } catch (e) { console.warn('Chart valores export:', e); }
+    }
+    const fechaExportacion = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    return `
+        <div class="export-header">
+            <h1>👤 Estadísticas Individual</h1>
+            <p class="subtitle">Congregación Cordialidad</p>
+        </div>
+        <h2 style="margin: 20px 0 15px; color: #1e40af; font-size: 1.25em;">${escapeHtml(title)}</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">${cardsHtml}</div>
+        ${chartsHtml}
+        <div style="margin-top: 20px;">${detailHtml}</div>
+        <div class="export-footer" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 0.85em; color: #666;">Generado el ${fechaExportacion}</div>
+    `;
+}
+
 // Función para exportar a PNG
 async function exportToPNG() {
     try {
         const template = document.getElementById('exportTemplate');
         const exportContent = document.getElementById('exportContent');
-        
-        // Generar contenido
-        exportContent.innerHTML = generateExportTemplate();
+        const isIndividual = currentExportMode === 'individual';
+        exportContent.innerHTML = isIndividual ? generateExportTemplateIndividual() : generateExportTemplate();
         
         // Mostrar temporalmente
         template.style.display = 'block';
@@ -3118,12 +3164,16 @@ async function exportToPNG() {
         // Descargar imagen
         const imgData = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        
-        const filterMes = document.getElementById('filterMes').value;
-        const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos';
         const fecha = new Date().toISOString().split('T')[0];
-        
-        link.download = `Reporte_${mesNombre}_${fecha}.png`;
+        if (currentExportMode === 'individual') {
+            const titleEl = document.getElementById('individualResultsTitle');
+            const nombre = titleEl ? titleEl.textContent.split('—')[0].trim().replace(/\s+/g, '_') : 'Individual';
+            link.download = `Estadisticas_Individual_${nombre}_${fecha}.png`;
+        } else {
+            const filterMes = document.getElementById('filterMes').value;
+            const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos';
+            link.download = `Reporte_${mesNombre}_${fecha}.png`;
+        }
         link.href = imgData;
         link.click();
     } catch (error) {
@@ -3137,9 +3187,8 @@ async function exportToPDF() {
     try {
         const template = document.getElementById('exportTemplate');
         const exportContent = document.getElementById('exportContent');
-        
-        // Generar contenido
-        exportContent.innerHTML = generateExportTemplate();
+        const isIndividual = currentExportMode === 'individual';
+        exportContent.innerHTML = isIndividual ? generateExportTemplateIndividual() : generateExportTemplate();
         
         // Mostrar temporalmente
         template.style.display = 'block';
@@ -3218,24 +3267,57 @@ async function exportToPDF() {
         }
         
         // Descargar PDF
-        const filterMes = document.getElementById('filterMes').value;
-        const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos';
         const fecha = new Date().toISOString().split('T')[0];
-        
-        pdf.save(`Reporte_${mesNombre}_${fecha}.pdf`);
+        if (currentExportMode === 'individual') {
+            const titleEl = document.getElementById('individualResultsTitle');
+            const nombre = titleEl ? titleEl.textContent.split('—')[0].trim().replace(/\s+/g, '_') : 'Individual';
+            pdf.save(`Estadisticas_Individual_${nombre}_${fecha}.pdf`);
+        } else {
+            const filterMes = document.getElementById('filterMes').value;
+            const mesNombre = filterMes !== 'all' ? getMonthName(filterMes) : 'Todos';
+            pdf.save(`Reporte_${mesNombre}_${fecha}.pdf`);
+        }
     } catch (error) {
         console.error('Error al exportar a PDF:', error);
         alert('Error al exportar a PDF. Por favor, intenta de nuevo.');
     }
 }
 
-// Función para mostrar menú de exportación
+// Función para mostrar menú de exportación (según pestaña activa: general o individual)
 function showExportMenu() {
     const modal = document.getElementById('exportModal');
+    const titleEl = document.getElementById('exportModalTitle');
+    if (isIndividualTabActive()) {
+        currentExportMode = 'individual';
+        if (titleEl) titleEl.textContent = '📥 Exportar Estadísticas Individual';
+        const resultsEl = document.getElementById('individualResults');
+        if (resultsEl && resultsEl.classList.contains('hidden')) {
+            alert('Primero realiza una consulta (selecciona persona, fechas y pulsa Consultar) para poder exportar.');
+            return;
+        }
+    } else {
+        currentExportMode = 'general';
+        if (titleEl) titleEl.textContent = '📥 Exportar Reporte General';
+    }
     modal.classList.remove('hidden');
-    // Prevenir scroll del body en móviles
     if (window.innerWidth <= 480) {
         document.body.classList.add('modal-open');
+    }
+}
+
+// Actualizar datos: si está en Reporte General recarga todo; si está en Individual recarga y vuelve a consultar
+function handleRefresh() {
+    if (isIndividualTabActive()) {
+        const persona = document.getElementById('queryPersona').value;
+        const fechaDesde = document.getElementById('queryFechaDesde').value;
+        const fechaHasta = document.getElementById('queryFechaHasta').value;
+        fetchData().then(() => {
+            if (persona && fechaDesde && fechaHasta && new Date(fechaDesde) <= new Date(fechaHasta)) {
+                renderIndividualResults(persona, fechaDesde, fechaHasta);
+            }
+        }).catch(() => {});
+    } else {
+        fetchData();
     }
 }
 
@@ -3283,8 +3365,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Event listeners principales
-    document.getElementById('btnRefresh').addEventListener('click', fetchData);
+    // Event listeners principales (Actualizar y Exportar según pestaña activa)
+    document.getElementById('btnRefresh').addEventListener('click', handleRefresh);
     document.getElementById('btnExport').addEventListener('click', showExportMenu);
     document.getElementById('filterMes').addEventListener('change', applyFilters);
     document.getElementById('filterGrupo').addEventListener('change', applyFilters);
