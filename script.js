@@ -1823,6 +1823,8 @@ function processData(jsonData) {
     
     // Aplicar filtros y mostrar datos (esto también actualiza las estadísticas)
     applyFilters();
+    // Actualizar lista de personas para la pestaña de estadísticas individual
+    updatePersonDropdown();
 }
 
 // Función para obtener datos de Google Sheets
@@ -2206,8 +2208,260 @@ function initAuth() {
 }
 
 // ============================================
-// EVENT LISTENERS PRINCIPALES
+// PESTAÑAS Y ESTADÍSTICAS INDIVIDUAL
 // ============================================
+
+// Actualizar dropdown de personas con nombres únicos (usando nombre mostrado como en los datos)
+function updatePersonDropdown() {
+    const select = document.getElementById('queryPersona');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- Selecciona una persona --</option>';
+    const seen = new Map(); // normalized -> display name
+    allData.forEach(item => {
+        const name = (item.nombre || '').trim();
+        if (!name) return;
+        const norm = normalizeName(name);
+        if (!seen.has(norm)) seen.set(norm, name);
+    });
+    const sorted = [...seen.values()].sort((a, b) => normalizeName(a).localeCompare(normalizeName(b), 'es', { sensitivity: 'base' }));
+    sorted.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+    });
+}
+
+// Establecer fechas por defecto (primer día del mes actual hasta hoy)
+function setDefaultDateRange() {
+    const hoy = new Date();
+    const primero = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const desde = document.getElementById('queryFechaDesde');
+    const hasta = document.getElementById('queryFechaHasta');
+    if (desde && !desde.value) desde.value = formatDateInput(primero);
+    if (hasta && !hasta.value) hasta.value = formatDateInput(hoy);
+}
+
+function formatDateInput(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+// Filtrar datos por persona y rango de fechas
+function getDataForPersonInRange(nombreSeleccionado, fechaDesde, fechaHasta) {
+    const from = new Date(fechaDesde);
+    const to = new Date(fechaHasta);
+    to.setHours(23, 59, 59, 999);
+    return allData.filter(item => {
+        if (!namesMatch(item.nombre, nombreSeleccionado)) return false;
+        const t = item.timestamp;
+        if (!t) return false;
+        const d = t instanceof Date ? t : parseGoogleSheetsDate(t);
+        if (!d || isNaN(d.getTime())) return false;
+        return d >= from && d <= to;
+    });
+}
+
+// Agregar estadísticas por mes para una persona en un rango
+function getMonthlyStatsForPerson(nombreSeleccionado, fechaDesde, fechaHasta) {
+    const from = new Date(fechaDesde);
+    const to = new Date(fechaHasta);
+    to.setHours(23, 59, 59, 999);
+    const data = allData.filter(item => {
+        if (!namesMatch(item.nombre, nombreSeleccionado)) return false;
+        const t = item.timestamp;
+        if (!t) return false;
+        const d = t instanceof Date ? t : parseGoogleSheetsDate(t);
+        if (!d || isNaN(d.getTime())) return false;
+        return d >= from && d <= to;
+    });
+    const byMonth = {}; // key: "YYYY-MM"
+    const add = (year, month, item) => {
+        const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+        if (!byMonth[key]) {
+            byMonth[key] = { label: getMonthName(month) + ' ' + year, reporto: 0, horas: 0, revisitas: 0, estudios: 0 };
+        }
+        byMonth[key].reporto += 1;
+        byMonth[key].horas += item.horas || 0;
+        byMonth[key].revisitas += item.revisitas || 0;
+        byMonth[key].estudios += item.estudios || 0;
+    };
+    data.forEach(item => {
+        const d = item.timestamp instanceof Date ? item.timestamp : parseGoogleSheetsDate(item.timestamp);
+        if (d) add(d.getFullYear(), d.getMonth(), item);
+    });
+    const keys = Object.keys(byMonth).sort();
+    return { data, byMonth: keys.map(k => ({ key: k, ...byMonth[k] })) };
+}
+
+// Obtener todos los meses en el rango (para gráfica de cumplimiento: reportó o no)
+function getMonthsInRange(fechaDesde, fechaHasta) {
+    const from = new Date(fechaDesde);
+    const to = new Date(fechaHasta);
+    const months = [];
+    const cur = new Date(from.getFullYear(), from.getMonth(), 1);
+    const end = new Date(to.getFullYear(), to.getMonth(), 1);
+    while (cur <= end) {
+        months.push({
+            key: `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}`,
+            label: getMonthName(cur.getMonth()) + ' ' + cur.getFullYear()
+        });
+        cur.setMonth(cur.getMonth() + 1);
+    }
+    return months;
+}
+
+let chartCumplimientoInstance = null;
+let chartValoresInstance = null;
+
+function renderIndividualResults(nombreSeleccionado, fechaDesde, fechaHasta) {
+    const registros = getDataForPersonInRange(nombreSeleccionado, fechaDesde, fechaHasta);
+    const resultsDiv = document.getElementById('individualResults');
+    const emptyDiv = document.getElementById('individualEmpty');
+    const titleEl = document.getElementById('individualResultsTitle');
+    const cardsEl = document.getElementById('individualStatsCards');
+    const detailEl = document.getElementById('individualDetail');
+    if (!resultsDiv || !emptyDiv) return;
+    if (registros.length === 0) {
+        resultsDiv.classList.add('hidden');
+        emptyDiv.classList.remove('hidden');
+        emptyDiv.innerHTML = '<p>No hay registros para <strong>' + escapeHtml(nombreSeleccionado) + '</strong> en el rango seleccionado.</p>';
+        return;
+    }
+    emptyDiv.classList.add('hidden');
+    resultsDiv.classList.remove('hidden');
+    const totalHoras = registros.reduce((s, r) => s + (r.horas || 0), 0);
+    const totalRevisitas = registros.reduce((s, r) => s + (r.revisitas || 0), 0);
+    const totalEstudios = registros.reduce((s, r) => s + (r.estudios || 0), 0);
+    const totalPublicaciones = registros.reduce((s, r) => s + (extractNumber(r.publicaciones) || 0), 0);
+    const vecesReporto = registros.length;
+    const vecesPredico = registros.filter(r => r.predico === 'Si prediqué').length;
+    const desdeStr = new Date(fechaDesde).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    const hastaStr = new Date(fechaHasta).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    titleEl.textContent = nombreSeleccionado + ' — ' + desdeStr + ' a ' + hastaStr;
+    cardsEl.innerHTML = `
+        <div class="individual-stat-card"><span class="value">${vecesReporto}</span><span class="label">Reportes</span></div>
+        <div class="individual-stat-card"><span class="value">${totalHoras}</span><span class="label">Horas</span></div>
+        <div class="individual-stat-card"><span class="value">${totalRevisitas}</span><span class="label">Revisitas</span></div>
+        <div class="individual-stat-card"><span class="value">${totalEstudios}</span><span class="label">Estudios</span></div>
+        <div class="individual-stat-card"><span class="value">${totalPublicaciones}</span><span class="label">Publicaciones</span></div>
+        <div class="individual-stat-card"><span class="value">${vecesPredico}</span><span class="label">Veces que predicó</span></div>
+    `;
+    const monthsInRange = getMonthsInRange(fechaDesde, fechaHasta);
+    const monthly = getMonthlyStatsForPerson(nombreSeleccionado, fechaDesde, fechaHasta);
+    const reportoPorMes = new Set(monthly.byMonth.map(m => m.key));
+    const labelsCumplimiento = monthsInRange.map(m => m.label);
+    const dataCumplimiento = monthsInRange.map(m => reportoPorMes.has(m.key) ? 1 : 0);
+    const colorsCumplimiento = dataCumplimiento.map(v => v ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.6)');
+    if (chartCumplimientoInstance) chartCumplimientoInstance.destroy();
+    const ctxCumpl = document.getElementById('chartCumplimiento');
+    if (ctxCumpl) {
+        chartCumplimientoInstance = new Chart(ctxCumpl.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labelsCumplimiento,
+                datasets: [{
+                    label: 'Reportó (Sí / No)',
+                    data: dataCumplimiento,
+                    backgroundColor: colorsCumplimiento,
+                    borderColor: dataCumplimiento.map(v => v ? '#16a34a' : '#dc2626'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.raw === 1 ? 'Reportó' : 'No reportó';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 1,
+                        ticks: { stepSize: 1, callback: v => v === 1 ? 'Sí' : 'No' }
+                    }
+                }
+            }
+        });
+    }
+    const labelsValores = monthly.byMonth.map(m => m.label);
+    if (chartValoresInstance) chartValoresInstance.destroy();
+    const ctxVal = document.getElementById('chartValores');
+    if (ctxVal) {
+        chartValoresInstance = new Chart(ctxVal.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labelsValores,
+                datasets: [
+                    { label: 'Horas', data: monthly.byMonth.map(m => m.horas), backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: '#2563eb', borderWidth: 1 },
+                    { label: 'Revisitas', data: monthly.byMonth.map(m => m.revisitas), backgroundColor: 'rgba(168, 85, 247, 0.7)', borderColor: '#7c3aed', borderWidth: 1 },
+                    { label: 'Estudios', data: monthly.byMonth.map(m => m.estudios), backgroundColor: 'rgba(34, 197, 94, 0.7)', borderColor: '#16a34a', borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: { stacked: false },
+                    y: { beginAtZero: true, stacked: false }
+                }
+            }
+        });
+    }
+    let tableHtml = '<h4>Detalle de reportes</h4><table><thead><tr><th>Fecha</th><th>Predicó</th><th>Horas</th><th>Revisitas</th><th>Estudios</th><th>Publicaciones</th></tr></thead><tbody>';
+    registros.sort((a, b) => (a.timestamp && b.timestamp) ? (new Date(a.timestamp) - new Date(b.timestamp)) : 0).forEach(r => {
+        const fecha = formatDate(r.timestamp);
+        tableHtml += '<tr>';
+        tableHtml += '<td>' + escapeHtml(fecha) + '</td>';
+        tableHtml += '<td>' + escapeHtml(r.predico || '-') + '</td>';
+        tableHtml += '<td>' + (r.horas || 0) + '</td>';
+        tableHtml += '<td>' + (r.revisitas || 0) + '</td>';
+        tableHtml += '<td>' + (r.estudios || 0) + '</td>';
+        tableHtml += '<td>' + (r.publicaciones || '-') + '</td>';
+        tableHtml += '</tr>';
+    });
+    tableHtml += '</tbody></table>';
+    detailEl.innerHTML = tableHtml;
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function initTabs() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabReporte = document.getElementById('tabReporte');
+    const tabIndividual = document.getElementById('tabIndividual');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-tab');
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (tab === 'reporte') {
+                tabReporte.classList.add('active');
+                tabIndividual.classList.remove('active');
+                document.body.classList.remove('tab-individual');
+            } else {
+                tabReporte.classList.remove('active');
+                tabIndividual.classList.add('active');
+                document.body.classList.add('tab-individual');
+                setDefaultDateRange();
+            }
+        });
+    });
+}
 
 // ============================================
 // MODAL DE LISTA DE PERSONAS
@@ -2989,6 +3243,30 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Inicializar filtro de mes con el mes actual por defecto
     initializeMonthFilter();
+    
+    // Pestañas y estadísticas individual
+    initTabs();
+    const btnConsultar = document.getElementById('btnConsultarIndividual');
+    if (btnConsultar) {
+        btnConsultar.addEventListener('click', () => {
+            const persona = document.getElementById('queryPersona').value;
+            const fechaDesde = document.getElementById('queryFechaDesde').value;
+            const fechaHasta = document.getElementById('queryFechaHasta').value;
+            if (!persona) {
+                alert('Selecciona una persona.');
+                return;
+            }
+            if (!fechaDesde || !fechaHasta) {
+                alert('Selecciona rango de fechas (desde y hasta).');
+                return;
+            }
+            if (new Date(fechaDesde) > new Date(fechaHasta)) {
+                alert('La fecha "Desde" debe ser anterior a "Hasta".');
+                return;
+            }
+            renderIndividualResults(persona, fechaDesde, fechaHasta);
+        });
+    }
     
     // Event listeners principales
     document.getElementById('btnRefresh').addEventListener('click', fetchData);

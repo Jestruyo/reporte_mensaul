@@ -11,6 +11,8 @@
     <!-- Librerías para exportar a PDF/PNG -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Chart.js para gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- Modal de Autenticación -->
@@ -108,7 +110,13 @@
             </div>
         </div>
 
-        <div class="filters">
+        <!-- Pestañas -->
+        <div class="tabs">
+            <button type="button" class="tab-btn active" data-tab="reporte">📋 Reporte General</button>
+            <button type="button" class="tab-btn" data-tab="individual">👤 Estadísticas Individual</button>
+        </div>
+
+        <div class="filters" id="filtersSection">
             <label for="filterMes">Filtrar por Mes:</label>
             <select id="filterMes">
                 <option value="all">Todos los meses</option>
@@ -146,7 +154,53 @@
             <p>❌ Error al cargar los datos. Por favor, intenta de nuevo.</p>
         </div>
 
-        <div id="contenedor" class="grid"></div>
+        <!-- Contenido pestaña Reporte General -->
+        <div id="tabReporte" class="tab-panel active">
+            <div id="contenedor" class="grid"></div>
+        </div>
+
+        <!-- Contenido pestaña Estadísticas Individual -->
+        <div id="tabIndividual" class="tab-panel">
+            <div class="individual-query">
+                <div class="query-form">
+                    <div class="query-row">
+                        <label for="queryPersona">Persona:</label>
+                        <select id="queryPersona">
+                            <option value="">-- Selecciona una persona --</option>
+                        </select>
+                    </div>
+                    <div class="query-row query-dates">
+                        <div>
+                            <label for="queryFechaDesde">Desde:</label>
+                            <input type="date" id="queryFechaDesde">
+                        </div>
+                        <div>
+                            <label for="queryFechaHasta">Hasta:</label>
+                            <input type="date" id="queryFechaHasta">
+                        </div>
+                    </div>
+                    <button type="button" id="btnConsultarIndividual" class="btn-consultar">🔍 Consultar</button>
+                </div>
+                <div id="individualResults" class="individual-results hidden">
+                    <h3 id="individualResultsTitle" class="individual-results-title"></h3>
+                    <div class="individual-stats-cards" id="individualStatsCards"></div>
+                    <div class="individual-charts" id="individualCharts">
+                        <div class="chart-container">
+                            <h4>Cumplimiento por mes (reportó / no reportó)</h4>
+                            <canvas id="chartCumplimiento"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Horas, Revisitas y Estudios por mes</h4>
+                            <canvas id="chartValores"></canvas>
+                        </div>
+                    </div>
+                    <div class="individual-detail" id="individualDetail"></div>
+                </div>
+                <div id="individualEmpty" class="individual-empty">
+                    <p>Selecciona una persona y un rango de fechas, luego pulsa <strong>Consultar</strong>.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Plantilla oculta para exportar -->

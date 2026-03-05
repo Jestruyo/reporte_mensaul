@@ -1299,3 +1299,414 @@ header h1 {
     font-size: 0.85em;
     color: #666;
 }
+
+/* ============================================
+   PESTAÑAS
+   ============================================ */
+.tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.tab-btn.active {
+    background: white;
+    color: #2563eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Ocultar filtros y estadísticas generales cuando está en pestaña individual */
+body.tab-individual .filters,
+body.tab-individual .stats-container {
+    display: none !important;
+}
+
+body.tab-individual .tabs {
+    margin-top: 0;
+}
+
+/* ============================================
+   ESTADÍSTICAS INDIVIDUAL
+   ============================================ */
+.individual-query {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+}
+
+.query-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.query-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.query-row label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9em;
+}
+
+.query-row select {
+    min-width: 260px;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1em;
+    background: white;
+}
+
+.query-dates {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+}
+
+.query-dates input[type="date"] {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.btn-consultar {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-consultar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.individual-results.hidden {
+    display: none !important;
+}
+
+.individual-results {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.individual-results-title {
+    color: #1e40af;
+    margin-bottom: 20px;
+    font-size: 1.25em;
+}
+
+.individual-stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.individual-stat-card {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #93c5fd;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.individual-stat-card .value {
+    font-size: 1.75em;
+    font-weight: 700;
+    color: #1d4ed8;
+    display: block;
+}
+
+.individual-stat-card .label {
+    font-size: 0.85em;
+    color: #1e40af;
+    margin-top: 4px;
+}
+
+.individual-charts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+@media (min-width: 900px) {
+    .individual-charts {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.chart-container {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.chart-container h4 {
+    margin: 0 0 16px 0;
+    font-size: 1em;
+    color: #334155;
+}
+
+.chart-container canvas {
+    max-height: 280px;
+}
+
+.individual-detail {
+    font-size: 0.9em;
+    color: #64748b;
+}
+
+.individual-detail table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+.individual-detail th,
+.individual-detail td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.individual-detail th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+}
+
+.individual-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+}
+
+.individual-empty p {
+    margin: 0;
+    font-size: 1.05em;
+}
+
+/* ============================================
+   ESTADÍSTICAS INDIVIDUAL - RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .tabs {
+        flex-direction: column;
+        padding: 6px;
+        margin-bottom: 16px;
+    }
+
+    .tab-btn {
+        padding: 14px 16px;
+        font-size: 0.95em;
+        text-align: center;
+    }
+
+    .individual-query {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 12px;
+    }
+
+    .query-form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .query-row select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .query-dates {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .query-dates input[type="date"] {
+        width: 100%;
+    }
+
+    .btn-consultar {
+        width: 100%;
+        padding: 14px;
+    }
+
+    .individual-results {
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+
+    .individual-results-title {
+        font-size: 1.1em;
+        word-break: break-word;
+        line-height: 1.3;
+    }
+
+    .individual-stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .individual-stat-card {
+        padding: 12px;
+    }
+
+    .individual-stat-card .value {
+        font-size: 1.5em;
+    }
+
+    .individual-stat-card .label {
+        font-size: 0.8em;
+    }
+
+    .individual-charts {
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .chart-container {
+        padding: 16px;
+        border-radius: 10px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .chart-container h4 {
+        font-size: 0.9em;
+        margin-bottom: 12px;
+    }
+
+    .chart-container canvas {
+        max-height: 240px;
+        min-height: 200px;
+    }
+
+    .individual-detail {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .individual-detail table {
+        min-width: 320px;
+        font-size: 0.85em;
+    }
+
+    .individual-detail th,
+    .individual-detail td {
+        padding: 6px 8px;
+    }
+
+    .individual-empty {
+        padding: 24px 16px;
+    }
+
+    .individual-empty p {
+        font-size: 0.95em;
+    }
+}
+
+@media (max-width: 480px) {
+    .tabs {
+        margin-bottom: 12px;
+    }
+
+    .tab-btn {
+        padding: 12px 10px;
+        font-size: 0.85em;
+    }
+
+    .individual-query {
+        padding: 12px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+    }
+
+    .query-form {
+        gap: 12px;
+    }
+
+    .individual-stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .individual-stat-card {
+        padding: 10px;
+    }
+
+    .individual-stat-card .value {
+        font-size: 1.35em;
+    }
+
+    .individual-stat-card .label {
+        font-size: 0.75em;
+    }
+
+    .chart-container {
+        padding: 12px;
+    }
+
+    .chart-container canvas {
+        max-height: 220px;
+        min-height: 180px;
+    }
+
+    .individual-detail th,
+    .individual-detail td {
+        padding: 6px 6px;
+        font-size: 0.8em;
+    }
+}
