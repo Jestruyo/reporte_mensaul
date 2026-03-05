@@ -9,7 +9,7 @@ const VALIDATION_CODE = '1914';
 
 // CONFIGURACIÓN: Usar datos locales para testing
 // Cambia a true para usar los datos locales en lugar de hacer fetch a Google Sheets
-const USE_LOCAL_DATA = false;  // Cambiar a true para testing local
+const USE_LOCAL_DATA = true;  // Cambiar a true para testing local
 
 // URL para obtener los datos en formato JSON desde Google Sheets
 // Usamos gid en lugar del nombre de la pestaña para mayor confiabilidad
@@ -1554,7 +1554,7 @@ const GRUPOS_LISTAS = {
         'Yosly Guzman'
     ],
     3: [
-        'Boris Márquez | Junior',
+        'Boris marquez | Junior',
         'Jesús Trujillo',
         'Antonio Medina',
         'Daniel Márquez',
@@ -1568,7 +1568,7 @@ const GRUPOS_LISTAS = {
         'Yurleidys Navarro',
         'Acela Mercado',
         'Blaider Gerrero',
-        'Boris Márquez | Padre',
+        'Boris marquez | Padre',
         'Carlos Rivera',
         'Cindy García',
         'Dina Rodelo',
@@ -1642,18 +1642,31 @@ function namesMatch(name1, name2) {
     // Coincidencia exacta
     if (norm1 === norm2) return true;
     
-    // Extraer solo la parte del nombre (antes del |)
+    // Extraer parte del nombre (antes del |) y rol/sufijo (después del |) si existe
     const getBaseName = (name) => {
         if (name.includes('|')) {
             return name.split('|')[0].trim();
         }
         return name.trim();
     };
+    const getSuffix = (name) => {
+        if (name.includes('|')) {
+            return name.split('|').slice(1).join('|').trim();
+        }
+        return '';
+    };
     
     const base1 = getBaseName(norm1);
     const base2 = getBaseName(norm2);
+    const suffix1 = getSuffix(norm1);
+    const suffix2 = getSuffix(norm2);
     
-    // Comparar los nombres base
+    // Si ambos tienen rol/sufijo (ej. "Padre" vs "Junior"), deben coincidir para ser la misma persona
+    if (suffix1 && suffix2 && suffix1 !== suffix2) {
+        return false; // Mismo nombre base pero distinto rol = personas distintas
+    }
+    
+    // Comparar los nombres base (cuando no hay conflicto de roles)
     if (base1 === base2) return true;
     
     // Si uno contiene al otro (para casos como "Boris Marquez" y "Boris Márquez | Padre")
